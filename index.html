@@ -1020,7 +1020,7 @@ function triggerCheckin() {
   if (allCards.length === 0) return;
   
   // Pick 3-10 random cards
-  const count = Math.min(3 + Math.floor(Math.random() * 8), allCards.length);
+  const count = 1;
   const shuffled = [...allCards].sort(() => Math.random() - 0.5);
   const selected = shuffled.slice(0, count);
   
