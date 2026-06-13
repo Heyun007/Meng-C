@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>梦角查岗</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+:root{--bg:#f5f5f7;--card:#ffffff;--text:#1d1d1f;--gray:#86868b;--border:#e5e5ea;--blue:#007aff;--red:#ff3b30;--green:#34c759;--radius:16px;--shadow:0 2px 20px rgba(0,0,0,0.08);}
+body{background:var(--bg);display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
+.phone{width:390px;height:650px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 0 0 1px rgba(0,0,0,0.04),0 20px 80px rgba(0,0,0,0.15);display:flex;flex-direction:column;}
+@media(max-width:430px){.phone{width:100vw;height:100vh;border-radius:0;box-shadow:none;}}
+
+/* Status Bar */
+.status-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 28px 8px;font-size:13px;font-weight:600;color:var(--text);background:var(--bg);flex-shrink:0;}
+.status-left{font-weight:700;letter-spacing:0.3px;}
+.status-right{display:flex;align-items:center;gap:6px;}
+.status-right .battery{width:24px;height:12px;border:1.5px solid var(--text);border-radius:3px;position:relative;display:flex;align-items:center;padding:1.5px;}
+.status-right .battery::after{content:'';position:absolute;right:-4px;top:3px;width:3px;height:6px;background:var(--text);border-radius:0 2px 2px 0;}
+.status-right .battery .level{height:100%;width:70%;background:var(--text);border-radius:1.5px;}
+.status-right .signal{display:flex;gap:2px;align-items:flex-end;}
+.status-right .signal span{width:3px;background:var(--text);border-radius:1px;}
+.status-right .signal span:nth-child(1){height:6px;}
+.status-right .signal span:nth-child(2){height:8px;}
+.status-right .signal span:nth-child(3){height:11px;}
+.status-right .signal span:nth-child(4){height:14px;}
+
+/* Main Content */
+.main-content{flex:1;overflow-y:auto;padding:8px 16px 20px;scroll-behavior:smooth;}
+.main-content::-webkit-scrollbar{width:0;}
+
+/* Feature List */
+.feature-list{display:flex;flex-direction:column;gap:10px;}
+.feature-item{background:var(--card);border-radius:var(--radius);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:var(--shadow);transition:transform 0.15s,box-shadow 0.15s;user-select:none;-webkit-tap-highlight-color:transparent;}
+.feature-item:active{transform:scale(0.98);box-shadow:0 1px 8px rgba(0,0,0,0.05);}
+.feature-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.feature-icon.purple{background:#e8dfff;color:#5e3cbd;}
+.feature-icon.pink{background:#ffe0e8;color:#d6336c;}
+.feature-icon.blue{background:#dff0ff;color:#007aff;}
+.feature-icon.green{background:#dfffe0;color:#34c759;}
+.feature-icon.orange{background:#ffe8d0;color:#ff9500;}
+.feature-icon.gray{background:#e8e8ed;color:#636366;}
+.feature-text{flex:1;}
+.feature-text h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.feature-text p{font-size:12px;color:var(--gray);}
+.feature-arrow{color:var(--gray);font-size:14px;}
+
+/* Pages (hidden by default) */
+.page{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:10;flex-direction:column;animation:slideIn 0.25s ease-out;}
+.page.active{display:flex;}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.page-header{display:flex;align-items:center;padding:12px 16px;gap:12px;background:var(--bg);flex-shrink:0;border-bottom:1px solid var(--border);}
+.page-header .back-btn{width:32px;height:32px;border-radius:50%;background:var(--card);border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.page-header .back-btn:active{transform:scale(0.9);}
+.page-header h2{font-size:17px;font-weight:600;color:var(--text);flex:1;}
+.page-body{flex:1;overflow-y:auto;padding:16px;}
+
+/* Profile editing */
+.avatar-edit{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:24px;}
+.avatar-preview{width:80px;height:80px;border-radius:50%;background:var(--card);object-fit:cover;border:2px solid var(--border);cursor:pointer;box-shadow:var(--shadow);}
+.avatar-preview:hover{opacity:0.8;}
+.form-group{margin-bottom:16px;}
+.form-group label{font-size:13px;font-weight:500;color:var(--gray);display:block;margin-bottom:4px;}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:15px;outline:none;background:var(--card);color:var(--text);transition:border 0.2s;}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--blue);}
+.form-group textarea{resize:vertical;min-height:60px;}
+
+/* Word Cards */
+.category-group{margin-bottom:12px;background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+.category-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;user-select:none;}
+.category-header .cat-name{font-weight:600;font-size:15px;color:var(--text);}
+.category-header .cat-toggle{font-size:12px;color:var(--gray);transition:transform 0.2s;}
+.category-header .cat-toggle.collapsed{transform:rotate(-90deg);}
+.category-body{padding:0 16px 12px;display:block;}
+.category-body.hidden{display:none;}
+.card-tag{display:inline-block;background:#f0f0f5;border-radius:8px;padding:6px 12px;margin:4px;font-size:13px;color:var(--text);}
+.card-tag .del-card{margin-left:6px;color:var(--red);cursor:pointer;font-weight:700;}
+.add-card-area{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;}
+.add-card-area input{flex:1;min-width:120px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;}
+.add-card-area input:focus{border-color:var(--blue);}
+.add-card-area button{padding:8px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-size:13px;cursor:pointer;}
+.add-card-area button:active{opacity:0.7;}
+.batch-add-area{margin-bottom:16px;}
+.batch-add-area textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:13px;resize:vertical;min-height:80px;outline:none;}
+.batch-add-area textarea:focus{border-color:var(--blue);}
+.batch-add-area .batch-actions{display:flex;gap:8px;margin-top:8px;}
+.batch-add-area .batch-actions button{padding:8px 16px;border:none;border-radius:8px;font-size:13px;cursor:pointer;}
+.batch-add-area .batch-actions .btn-add{background:var(--blue);color:#fff;}
+.batch-add-area .batch-actions .btn-clear{background:var(--red);color:#fff;}
+.add-cat-btn{margin-bottom:12px;padding:10px 16px;border:2px dashed var(--border);border-radius:12px;background:transparent;color:var(--gray);font-size:14px;cursor:pointer;width:100%;text-align:center;}
+.add-cat-btn:active{background:var(--card);}
+.delete-cat-btn{color:var(--red);font-size:12px;cursor:pointer;margin-left:10px;padding:2px 6px;border-radius:4px;}
+.delete-cat-btn:active{background:#ffe0e0;}
+
+/* History lists */
+.history-list{display:flex;flex-direction:column;gap:8px;}
+.history-item{background:var(--card);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;}
+.history-item .hi-left{flex:1;}
+.history-item .hi-left .hi-main{font-size:14px;color:var(--text);margin-bottom:3px;}
+.history-item .hi-left .hi-main .hi-status{font-size:12px;padding:2px 8px;border-radius:10px;margin-left:6px;}
+.history-item .hi-left .hi-main .hi-status.answered{background:#dfffe0;color:var(--green);}
+.history-item .hi-left .hi-main .hi-status.missed{background:#ffe0e0;color:var(--red);}
+.history-item .hi-left .hi-main .hi-status.hung{background:#ffe8d0;color:#ff9500;}
+.history-item .hi-left .hi-time{font-size:12px;color:var(--gray);}
+.history-item .hi-right{font-size:13px;color:var(--gray);flex-shrink:0;margin-left:12px;}
+.empty-state{padding:40px 20px;text-align:center;color:var(--gray);font-size:14px;}
+
+/* Settings */
+.setting-item{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.setting-item:active{transform:scale(0.99);}
+.setting-item .si-left{display:flex;align-items:center;gap:12px;}
+.setting-item .si-left .si-label{font-size:15px;color:var(--text);}
+.setting-item .si-left .si-desc{font-size:12px;color:var(--gray);}
+.setting-item .si-right{color:var(--gray);font-size:14px;}
+.setting-toggle{width:48px;height:28px;border-radius:14px;background:#e8e8ed;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+.setting-toggle.on{background:var(--green);}
+.setting-toggle .toggle-knob{width:24px;height:24px;border-radius:12px;background:#fff;position:absolute;top:2px;left:2px;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.15);}
+.setting-toggle.on .toggle-knob{transform:translateX(20px);}
+.setting-item input[type="file"]{display:none;}
+
+/* Overlays */
+.overlay{display:none;position:absolute;top:0;left:0;width:100%;height:100%;z-index:50;justify-content:center;align-items:center;}
+.overlay.active{display:flex;}
+.overlay-bg{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);}
+
+/* Voice Call Overlay */
+.call-overlay{z-index:60;}
+.call-card{position:relative;width:320px;background:linear-gradient(145deg,#1a1a2e,#16213e);border-radius:28px;padding:40px 24px 32px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);z-index:2;animation:callIn 0.35s ease-out;}
+@keyframes callIn{from{transform:scale(0.85) translateY(20px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+.call-card .call-avatar{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;object-fit:cover;border:3px solid rgba(255,255,255,0.2);}
+.call-card .call-name{font-size:20px;font-weight:600;color:#fff;margin-bottom:4px;}
+.call-card .call-status{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:28px;}
+.call-card .call-timer{font-size:32px;font-weight:300;color:#fff;font-variant-numeric:tabular-nums;margin-bottom:28px;display:none;}
+.call-card .call-timer.show{display:block;}
+.call-buttons{display:flex;justify-content:center;gap:40px;}
+.call-btn{width:56px;height:56px;border-radius:50%;border:none;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s;}
+.call-btn:active{transform:scale(0.9);}
+.call-btn.hangup{background:var(--red);color:#fff;}
+.call-btn.answer{background:var(--green);color:#fff;}
+.call-btn.minimize{background:rgba(255,255,255,0.15);color:#fff;font-size:16px;margin-left:auto;}
+.call-mini{display:none;position:absolute;bottom:20px;right:20px;z-index:70;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);border-radius:24px;padding:6px 12px 6px 6px;align-items:center;gap:8px;cursor:pointer;animation:fadeIn 0.2s;box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+.call-mini.show{display:flex;}
+.call-mini .mini-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;}
+.call-mini .mini-time{font-size:13px;color:#fff;font-weight:500;white-space:nowrap;}
+
+/* Check-in Overlay */
+.checkin-overlay{z-index:55;}
+.checkin-card{position:absolute;bottom:0;left:0;width:100%;background:var(--card);border-radius:20px 20px 0 0;padding:20px 20px 30px;box-shadow:0 -10px 40px rgba(0,0,0,0.15);z-index:2;animation:slideUp 0.35s ease-out;max-height:50%;overflow-y:auto;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.checkin-card .ci-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.checkin-card .ci-header .ci-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;}
+.checkin-card .ci-header .ci-name{font-size:16px;font-weight:600;color:var(--text);}
+.checkin-card .ci-header .ci-close{margin-left:auto;width:28px;height:28px;border-radius:50%;border:none;background:var(--border);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--gray);}
+.checkin-card .ci-header .ci-close:active{transform:scale(0.9);}
+.checkin-card .ci-messages{display:flex;flex-direction:column;gap:8px;}
+.checkin-card .ci-messages .ci-msg{background:#f0f0f5;border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text);align-self:flex-start;max-width:80%;}
+
+/* Buttons */
+.btn-primary{padding:12px 24px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;width:100%;}
+.btn-primary:active{opacity:0.7;}
+.btn-danger{padding:12px 24px;background:var(--red);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;width:100%;}
+.btn-danger:active{opacity:0.7;}
+.btn-secondary{padding:12px 24px;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;width:100%;}
+.btn-secondary:active{opacity:0.7;}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes popIn{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+/* Toast */
+.toast{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;z-index:100;display:none;animation:fadeIn 0.2s;backdrop-filter:blur(10px);}
+.toast.show{display:block;}
+
+/* Responsive image */
+.img-fit{width:100%;height:auto;object-fit:cover;}
+</style>
+</head>
+<body>
+<div class="phone" id="app">
+
+<!-- Status Bar -->
+<div class="status-bar">
+  <div class="status-left" id="statusTime">00:00</div>
+  <div class="status-right">
+    <div class="signal">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="battery"><div class="level" style="width:72%"></div></div>
+  </div>
+</div>
+
+<!-- Main Content (Home) -->
+<div class="main-content" id="pageHome">
+  <div class="feature-list">
+    <div class="feature-item" onclick="navigateTo('pageProfile')">
+      <div class="feature-icon purple">👤</div>
+      <div class="feature-text">
+        <h3>个人主页</h3>
+        <p>编辑你的个人信息</p>
+      </div>
+      <div class="feature-arrow">›</div>
+    </div>
+    <div class="feature-item" onclick="navigateTo('pageDreamRole')">
+      <div class="feature-icon pink">💜</div>
+      <div class="feature-text">
+        <h3>梦角信息</h3>
+        <p>编辑梦角的个人信息</p>
+      </div>
+      <div class="feature-arrow">›</div>
+    </div>
+    <div class="feature-item" onclick="navigateTo('pageWordCards')">
+      <div class="feature-icon blue">📇</div>
+      <div class="feature-text">
+        <h3>字卡功能</h3>
+        <p>添加和管理字卡</p>
+      </div>
+      <div class="feature-arrow">›</div>
+    </div>
+    <div class="feature-item" onclick="navigateTo('pageCallHistory')">
+      <div class="feature-icon green">📞</div>
+      <div class="feature-text">
+        <h3>语音通话记录</h3>
+        <p>查看通话历史</p>
+      </div>
+      <div class="feature-arrow">›</div>
+    </div>
+    <div class="feature-item" onclick="navigateTo('pageCheckinHistory')">
+      <div class="feature-icon orange">🔍</div>
+      <div class="feature-text">
+        <h3>查岗记录</h3>
+        <p>查看查岗历史</p>
+      </div>
+      <div class="feature-arrow">›</div>
+    </div>
+    <div class="feature-item" onclick="navigateTo('pageSettings')">
+      <div class="feature-icon gray">⚙️</div>
+      <div class="feature-text">
+        <h3>设置</h3>
+        <p>背景、备份、推送</p>
+      </div>
+      <div class="feature-arrow">›</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: Personal Profile ===== -->
+<div class="page" id="pageProfile">
+  <div class="page-header">
+    <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
+    <h2>个人主页</h2>
+  </div>
+  <div class="page-body">
+    <div class="avatar-edit">
+      <img class="avatar-preview" id="profileAvatarPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%23e8e8ed'/%3E%3Ctext x='40' y='44' text-anchor='middle' fill='%2386868b' font-size='28'%3E👤%3C/text%3E%3C/svg%3E" onclick="document.getElementById('profileAvatarInput').click()">
+      <input type="file" id="profileAvatarInput" accept="image/*" style="display:none" onchange="handleProfileAvatar(event)">
+      <span style="font-size:12px;color:var(--gray);cursor:pointer" onclick="document.getElementById('profileAvatarInput').click()">点击更换头像</span>
+    </div>
+    <div class="form-group">
+      <label>昵称</label>
+      <input type="text" id="profileName" placeholder="你的昵称" value="我">
+    </div>
+    <div class="form-group">
+      <label>状态</label>
+      <input type="text" id="profileStatus" placeholder="输入个性状态" value="在线">
+    </div>
+    <button class="btn-primary" onclick="saveProfile()">保存</button>
+  </div>
+</div>
+
+<!-- ===== PAGE: Dream Role ===== -->
+<div class="page" id="pageDreamRole">
+  <div class="page-header">
+    <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
+    <h2>梦角信息</h2>
+  </div>
+  <div class="page-body">
+    <div class="avatar-edit">
+      <img class="avatar-preview" id="dreamAvatarPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%23ffe0e8'/%3E%3Ctext x='40' y='44' text-anchor='middle' fill='%23d6336c' font-size='28'%3E💜%3C/text%3E%3C/svg%3E" onclick="document.getElementById('dreamAvatarInput').click()">
+      <input type="file" id="dreamAvatarInput" accept="image/*" style="display:none" onchange="handleDreamAvatar(event)">
+      <span style="font-size:12px;color:var(--gray);cursor:pointer" onclick="document.getElementById('dreamAvatarInput').click()">点击更换头像</span>
+    </div>
+    <div class="form-group">
+      <label>梦角名字</label>
+      <input type="text" id="dreamName" placeholder="输入梦角名字" value="沈屿">
+    </div>
+    <div class="form-group">
+      <label>性别</label>
+      <select id="dreamGender">
+        <option value="男">男</option>
+        <option value="女">女</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="saveDreamRole()">保存</button>
+  </div>
+</div>
+
+<!-- ===== PAGE: Word Cards ===== -->
+<div class="page" id="pageWordCards">
+  <div class="page-header">
+    <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
+    <h2>字卡功能</h2>
+  </div>
+  <div class="page-body">
+    <button class="add-cat-btn" onclick="addCategory()">+ 添加分类标签</button>
+    <div id="wordCardsContainer"></div>
+    <div class="batch-add-area" style="margin-top:16px">
+      <label style="font-size:13px;font-weight:500;color:var(--gray);display:block;margin-bottom:4px">批量添加字卡（每行一个）</label>
+      <textarea id="batchText" placeholder="怎么还没睡？&#10;又在看手机？&#10;想我了没？"></textarea>
+      <div class="batch-actions">
+        <button class="btn-add" onclick="batchAddCards()">批量添加</button>
+        <button class="btn-clear" onclick="document.getElementById('batchText').value=''">清空</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: Call History ===== -->
+<div class="page" id="pageCallHistory">
+  <div class="page-header">
+    <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
+    <h2>语音通话记录</h2>
+  </div>
+  <div class="page-body">
+    <div class="history-list" id="callHistoryList">
+      <div class="empty-state">暂无通话记录</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: Check-in History ===== -->
+<div class="page" id="pageCheckinHistory">
+  <div class="page-header">
+    <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
+    <h2>查岗记录</h2>
+  </div>
+  <div class="page-body">
+    <div class="history-list" id="checkinHistoryList">
+      <div class="empty-state">暂无查岗记录</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: Settings ===== -->
+<div class="page" id="pageSettings">
+  <div class="page-header">
+    <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
+    <h2>设置</h2>
+  </div>
+  <div class="page-body">
+    <div class="setting-item" onclick="document.getElementById('callBgInput').click()">
+      <div class="si-left">
+        <span class="si-label">语音通话背景</span>
+        <span class="si-desc">自定义通话背景图</span>
+      </div>
+      <div class="si-right">›</div>
+      <input type="file" id="callBgInput" accept="image/*" onchange="handleCallBg(event)">
+    </div>
+    <div class="setting-item" onclick="document.getElementById('checkinBgInput').click()">
+      <div class="si-left">
+        <span class="si-label">查岗弹窗背景</span>
+        <span class="si-desc">自定义查岗背景图</span>
+      </div>
+      <div class="si-right">›</div>
+      <input type="file" id="checkinBgInput" accept="image/*" onchange="handleCheckinBg(event)">
+    </div>
+    <div class="setting-item" onclick="backupData()">
+      <div class="si-left">
+        <span class="si-label">备份数据</span>
+        <span class="si-desc">导出数据到文件</span>
+      </div>
+      <div class="si-right">›</div>
+    </div>
+    <div class="setting-item" onclick="document.getElementById('restoreInput').click()">
+      <div class="si-left">
+        <span class="si-label">从备份导入</span>
+        <span class="si-desc">恢复数据</span>
+      </div>
+      <div class="si-right">›</div>
+      <input type="file" id="restoreInput" accept=".json" onchange="restoreData(event)">
+    </div>
+    <div class="setting-item">
+      <div class="si-left">
+        <span class="si-label">后台消息推送</span>
+        <span class="si-desc">接收梦角的消息通知</span>
+      </div>
+      <div class="setting-toggle" id="pushToggle">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Voice Call Overlay ===== -->
+<div class="overlay call-overlay" id="callOverlay">
+  <div class="overlay-bg"></div>
+  <div class="call-card" id="callCard">
+    <img class="call-avatar" id="callAvatar" src="" alt="avatar">
+    <div class="call-name" id="callName">沈屿</div>
+    <div class="call-status" id="callStatus">来电中…</div>
+    <div class="call-timer" id="callTimer">00:00:00</div>
+    <div class="call-buttons" id="callButtons">
+      <button class="call-btn hangup" onclick="hangupCall()">☎</button>
+      <button class="call-btn answer" onclick="answerCall()">📞</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Call Minimized ===== -->
+<div class="call-mini" id="callMini" onclick="expandCall()">
+  <img class="mini-avatar" id="miniAvatar" src="" alt="">
+  <span class="mini-time" id="miniTime">00:00</span>
+</div>
+
+<!-- ===== Check-in Overlay ===== -->
+<div class="overlay checkin-overlay" id="checkinOverlay">
+  <div class="overlay-bg"></div>
+  <div class="checkin-card" id="checkinCard">
+    <div class="ci-header">
+      <img class="ci-avatar" id="ciAvatar" src="" alt="">
+      <span class="ci-name" id="ciName">沈屿</span>
+      <button class="ci-close" onclick="closeCheckin()">✕</button>
+    </div>
+    <div class="ci-messages" id="ciMessages"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+// ===== STATE =====
+let state = {
+  profile: { avatar: '', name: '我', status: '在线' },
+  dream: { avatar: '', name: '沈屿', gender: '男' },
+  categories: [{ id: 'default', name: '默认' }],
+  cards: [
+    { id: 'c1', text: '怎么这么晚还在看手机？', cat: 'default' },
+    { id: 'c2', text: '还不睡？要我陪你吗？', cat: 'default' },
+    { id: 'c3', text: '又在偷偷刷视频？', cat: 'default' },
+    { id: 'c4', text: '想我了没？', cat: 'default' },
+    { id: 'c5', text: '过来，让我抱抱。', cat: 'default' },
+  ],
+  callHistory: [],
+  checkinHistory: [],
+  settings: { callBg: null, checkinBg: null, pushEnabled: false },
+  callState: 'idle', // idle | ringing | connected | minimized
+  callTimerInterval: null,
+  callStartTime: null,
+  callElapsed: 0,
+  nextCallId: 0,
+  nextCheckinId: 0,
+};
+
+// ===== INIT =====
+function init() {
+  loadState();
+  renderAll();
+  updateTime();
+  setInterval(updateTime, 1000);
+  startRandomEvents();
+  setupPush();
+}
+
+// ===== PERSISTENCE =====
+function saveState() {
+  try {
+    localStorage.setItem('dreamCheckState', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('dreamCheckState');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Merge carefully
+      if (parsed.profile) state.profile = parsed.profile;
+      if (parsed.dream) state.dream = parsed.dream;
+      if (parsed.categories) state.categories = parsed.categories;
+      if (parsed.cards) state.cards = parsed.cards;
+      if (parsed.callHistory) state.callHistory = parsed.callHistory;
+      if (parsed.checkinHistory) state.checkinHistory = parsed.checkinHistory;
+      if (parsed.settings) state.settings = parsed.settings;
+      if (parsed.nextCallId) state.nextCallId = parsed.nextCallId;
+      if (parsed.nextCheckinId) state.nextCheckinId = parsed.nextCheckinId;
+    }
+  } catch(e) {}
+}
+
+// ===== TIME =====
+function updateTime() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('statusTime').textContent = h + ':' + m;
+}
+
+// ===== NAVIGATION =====
+function navigateTo(pageId) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById(pageId);
+  if (page) {
+    page.classList.add('active');
+    // Re-render dynamic content when navigating to those pages
+    if (pageId === 'pageWordCards') renderWordCards();
+    if (pageId === 'pageCallHistory') renderCallHistory();
+    if (pageId === 'pageCheckinHistory') renderCheckinHistory();
+    if (pageId === 'pageProfile') loadProfileForm();
+    if (pageId === 'pageDreamRole') loadDreamRoleForm();
+  } else {
+    // Home
+    document.querySelector('.main-content').style.display = 'block';
+  }
+  // Make sure main content is hidden when a page is active
+  document.querySelector('.main-content').style.display = pageId === 'pageHome' ? 'block' : 'none';
+}
+
+// Override the inline onclick to also handle main content visibility
+const origNavigateTo = navigateTo;
+navigateTo = function(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if (pageId === 'pageHome') {
+    document.querySelector('.main-content').style.display = 'block';
+    return;
+  }
+  document.querySelector('.main-content').style.display = 'none';
+  const page = document.getElementById(pageId);
+  if (page) {
+    page.classList.add('active');
+    if (pageId === 'pageWordCards') renderWordCards();
+    if (pageId === 'pageCallHistory') renderCallHistory();
+    if (pageId === 'pageCheckinHistory') renderCheckinHistory();
+    if (pageId === 'pageProfile') loadProfileForm();
+    if (pageId === 'pageDreamRole') loadDreamRoleForm();
+  }
+};
+
+// ===== PROFILE =====
+function loadProfileForm() {
+  document.getElementById('profileName').value = state.profile.name || '我';
+  document.getElementById('profileStatus').value = state.profile.status || '在线';
+  if (state.profile.avatar) {
+    document.getElementById('profileAvatarPreview').src = state.profile.avatar;
+  }
+}
+
+function handleProfileAvatar(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    state.profile.avatar = ev.target.result;
+    document.getElementById('profileAvatarPreview').src = ev.target.result;
+    saveState();
+    showToast('头像已更新');
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveProfile() {
+  state.profile.name = document.getElementById('profileName').value || '我';
+  state.profile.status = document.getElementById('profileStatus').value || '在线';
+  saveState();
+  showToast('个人资料已保存');
+}
+
+// ===== DREAM ROLE =====
+function loadDreamRoleForm() {
+  document.getElementById('dreamName').value = state.dream.name || '沈屿';
+  document.getElementById('dreamGender').value = state.dream.gender || '男';
+  if (state.dream.avatar) {
+    document.getElementById('dreamAvatarPreview').src = state.dream.avatar;
+  }
+}
+
+function handleDreamAvatar(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    state.dream.avatar = ev.target.result;
+    document.getElementById('dreamAvatarPreview').src = ev.target.result;
+    saveState();
+    showToast('梦角头像已更新');
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveDreamRole() {
+  state.dream.name = document.getElementById('dreamName').value || '沈屿';
+  state.dream.gender = document.getElementById('dreamGender').value || '男';
+  saveState();
+  showToast('梦角信息已保存');
+}
+
+// ===== WORD CARDS =====
+function renderWordCards() {
+  const container = document.getElementById('wordCardsContainer');
+  container.innerHTML = '';
+  state.categories.forEach(cat => {
+    const cards = state.cards.filter(c => c.cat === cat.id);
+    const group = document.createElement('div');
+    group.className = 'category-group';
+    const collapsed = cat.collapsed || false;
+    group.innerHTML = `
+      <div class="category-header" onclick="toggleCategory('${cat.id}')">
+        <span class="cat-name">${cat.name}（${cards.length}）</span>
+        <div>
+          <span class="delete-cat-btn" onclick="event.stopPropagation();deleteCategory('${cat.id}')">🗑</span>
+          <span class="cat-toggle ${collapsed ? 'collapsed' : ''}">▼</span>
+        </div>
+      </div>
+      <div class="category-body ${collapsed ? 'hidden' : ''}" id="catBody_${cat.id}">
+        <div id="cards_${cat.id}">
+          ${cards.map(c => `<span class="card-tag">${c.text}<span class="del-card" onclick="deleteCard('${c.id}')">×</span></span>`).join('') || '<span style="font-size:12px;color:var(--gray)">暂无字卡</span>'}
+        </div>
+        <div class="add-card-area">
+          <input type="text" id="cardInput_${cat.id}" placeholder="输入新字卡" onkeydown="if(event.key==='Enter')addCard('${cat.id}')">
+          <button onclick="addCard('${cat.id}')">添加</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(group);
+  });
+}
+
+function toggleCategory(catId) {
+  const cat = state.categories.find(c => c.id === catId);
+  if (cat) {
+    cat.collapsed = !cat.collapsed;
+    saveState();
+    renderWordCards();
+  }
+}
+
+function addCategory() {
+  const name = prompt('输入分类名称：');
+  if (!name || name.trim() === '') return;
+  const id = 'cat_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  state.categories.push({ id, name: name.trim(), collapsed: false });
+  saveState();
+  renderWordCards();
+  showToast('分类已添加');
+}
+
+function deleteCategory(catId) {
+  if (catId === 'default') { showToast('默认分类不能删除'); return; }
+  if (!confirm('删除此分类及其所有字卡？')) return;
+  state.cards = state.cards.filter(c => c.cat !== catId);
+  state.categories = state.categories.filter(c => c.id !== catId);
+  saveState();
+  renderWordCards();
+  showToast('分类已删除');
+}
+
+function addCard(catId) {
+  const input = document.getElementById('cardInput_' + catId);
+  const text = input.value.trim();
+  if (!text) return;
+  state.cards.push({ id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), text, cat: catId });
+  input.value = '';
+  saveState();
+  renderWordCards();
+}
+
+function deleteCard(cardId) {
+  state.cards = state.cards.filter(c => c.id !== cardId);
+  saveState();
+  renderWordCards();
+}
+
+function batchAddCards() {
+  const text = document.getElementById('batchText').value;
+  const lines = text.split('\n').map(s => s.trim()).filter(s => s);
+  if (lines.length === 0) { showToast('请输入字卡'); return; }
+  const targetCat = state.categories[0] ? state.categories[0].id : 'default';
+  lines.forEach(line => {
+    state.cards.push({ id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2,8), text: line, cat: targetCat });
+  });
+  saveState();
+  renderWordCards();
+  showToast('已添加 ' + lines.length + ' 个字卡');
+}
+
+// ===== CALL HISTORY =====
+function renderCallHistory() {
+  const list = document.getElementById('callHistoryList');
+  if (state.callHistory.length === 0) {
+    list.innerHTML = '<div class="empty-state">暂无通话记录</div>';
+    return;
+  }
+  list.innerHTML = state.callHistory.slice().reverse().map(c => {
+    const time = new Date(c.timestamp);
+    const timeStr = time.getMonth()+1 + '/' + time.getDate() + ' ' + String(time.getHours()).padStart(2,'0') + ':' + String(time.getMinutes()).padStart(2,'0');
+    let statusLabel, statusClass;
+    if (c.type === 'answered') { statusLabel = '已接听'; statusClass = 'answered'; }
+    else if (c.type === 'missed') { statusLabel = '未接听'; statusClass = 'missed'; }
+    else { statusLabel = '已挂断'; statusClass = 'hung'; }
+    const dur = c.duration ? formatDuration(c.duration) : '--';
+    return `<div class="history-item">
+      <div class="hi-left">
+        <div class="hi-main">${state.dream.name || '梦角'} <span class="hi-status ${statusClass}">${statusLabel}</span></div>
+        <div class="hi-time">${timeStr}</div>
+      </div>
+      <div class="hi-right">${dur}</div>
+    </div>`;
+  }).join('');
+}
+
+function formatDuration(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+// ===== CHECKIN HISTORY =====
+function renderCheckinHistory() {
+  const list = document.getElementById('checkinHistoryList');
+  if (state.checkinHistory.length === 0) {
+    list.innerHTML = '<div class="empty-state">暂无查岗记录</div>';
+    return;
+  }
+  list.innerHTML = state.checkinHistory.slice().reverse().map(c => {
+    const time = new Date(c.timestamp);
+    const timeStr = time.getMonth()+1 + '/' + time.getDate() + ' ' + String(time.getHours()).padStart(2,'0') + ':' + String(time.getMinutes()).padStart(2,'0');
+    return `<div class="history-item">
+      <div class="hi-left">
+        <div class="hi-main">${c.message || '查岗消息'}</div>
+        <div class="hi-time">${timeStr}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== SETTINGS =====
+function handleCallBg(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    state.settings.callBg = ev.target.result;
+    saveState();
+    showToast('通话背景已设置');
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleCheckinBg(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    state.settings.checkinBg = ev.target.result;
+    saveState();
+    showToast('查岗背景已设置');
+  };
+  reader.readAsDataURL(file);
+}
+
+function backupData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '梦角查岗_备份_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('数据已备份');
+}
+
+function restoreData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      // Merge but keep structure
+      if (data.profile) state.profile = data.profile;
+      if (data.dream) state.dream = data.dream;
+      if (data.categories) state.categories = data.categories;
+      if (data.cards) state.cards = data.cards;
+      if (data.callHistory) state.callHistory = data.callHistory;
+      if (data.checkinHistory) state.checkinHistory = data.checkinHistory;
+      if (data.settings) state.settings = data.settings;
+      if (data.nextCallId) state.nextCallId = data.nextCallId;
+      if (data.nextCheckinId) state.nextCheckinId = data.nextCheckinId;
+      saveState();
+      renderAll();
+      showToast('数据已恢复');
+    } catch(e) {
+      showToast('备份文件格式错误');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function togglePush() {
+  state.settings.pushEnabled = !state.settings.pushEnabled;
+  const toggle = document.getElementById('pushToggle');
+  toggle.classList.toggle('on', state.settings.pushEnabled);
+  saveState();
+  if (state.settings.pushEnabled) {
+    requestPushPermission();
+  }
+  showToast(state.settings.pushEnabled ? '推送已开启' : '推送已关闭');
+}
+
+// ===== PUSH NOTIFICATIONS =====
+function setupPush() {
+  const toggle = document.getElementById('pushToggle');
+  toggle.classList.toggle('on', state.settings.pushEnabled);
+  document.getElementById('pushToggle').onclick = togglePush;
+}
+
+async function requestPushPermission() {
+  if (!('Notification' in window)) { showToast('此浏览器不支持推送'); return; }
+  if (Notification.permission === 'granted') {
+    registerSW();
+  } else if (Notification.permission !== 'denied') {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      registerSW();
+    } else {
+      showToast('请允许通知权限');
+      state.settings.pushEnabled = false;
+      document.getElementById('pushToggle').classList.remove('on');
+      saveState();
+    }
+  } else {
+    showToast('通知已被拒绝，请在浏览器设置中开启');
+    state.settings.pushEnabled = false;
+    document.getElementById('pushToggle').classList.remove('on');
+    saveState();
+  }
+}
+
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) { showToast('不支持 Service Worker'); return; }
+  try {
+    // Check if already registered
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    for (const reg of registrations) {
+      if (reg.scope && reg.scope.includes(location.origin)) {
+        showToast('推送已准备就绪');
+        return;
+      }
+    }
+    // We need to create a service worker file
+    // For this demo, we'll just show a toast
+    showToast('推送功能需部署到 HTTPS 服务器后生效');
+  } catch(e) {
+    showToast('推送注册失败：' + e.message);
+  }
+}
+
+// ===== RANDOM EVENTS =====
+function startRandomEvents() {
+  // Check every 30 seconds if an event should trigger
+  setInterval(() => {
+    if (state.callState !== 'idle') return; // Don't stack events
+    // Random check: ~3% chance per check = roughly 1-2 times per hour on average
+    if (Math.random() < 0.04) {
+      triggerRandomEvent();
+    }
+  }, 30000);
+}
+
+function triggerRandomEvent() {
+  const r = Math.random();
+  if (r < 0.5) {
+    triggerCall();
+  } else {
+    triggerCheckin();
+  }
+}
+
+// ===== VOICE CALL =====
+function triggerCall() {
+  if (state.callState !== 'idle') return;
+  state.callState = 'ringing';
+  const avatar = state.dream.avatar || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2780%27 viewBox=%270 0 80 80%27%3E%3Ccircle cx=%2740%27 cy=%2740%27 r=%2740%27 fill=%27%23ffe0e8%27/%3E%3Ctext x=%2740%27 y=%2744%27 text-anchor=%27middle%27 fill=%27%23d6336c%27 font-size=%2728%27%3E💜%3C/text%3E%3C/svg%3E';
+  document.getElementById('callAvatar').src = avatar;
+  document.getElementById('callName').textContent = state.dream.name || '沈屿';
+  document.getElementById('callStatus').textContent = '来电中…';
+  document.getElementById('callTimer').classList.remove('show');
+  document.getElementById('callButtons').innerHTML = `
+    <button class="call-btn hangup" onclick="hangupCall()">☎</button>
+    <button class="call-btn answer" onclick="answerCall()">📞</button>
+  `;
+  if (state.settings.callBg) {
+    document.getElementById('callCard').style.background = `url(${state.settings.callBg}) center/cover, linear-gradient(145deg,#1a1a2e,#16213e)`;
+  } else {
+    document.getElementById('callCard').style.background = 'linear-gradient(145deg,#1a1a2e,#16213e)';
+  }
+  document.getElementById('callOverlay').classList.add('active');
+  document.getElementById('callMini').classList.remove('show');
+  
+  // Auto-hangup after 15 seconds if not answered
+  setTimeout(() => {
+    if (state.callState === 'ringing') {
+      // Missed call
+      state.callHistory.push({
+        id: state.nextCallId++,
+        type: 'missed',
+        timestamp: Date.now(),
+        duration: 0
+      });
+      state.callState = 'idle';
+      document.getElementById('callOverlay').classList.remove('active');
+      saveState();
+      showToast('未接来电 - ' + (state.dream.name || '梦角'));
+      // Push notification for missed call
+      sendNotification(state.dream.name || '梦角', '你有一个未接来电');
+    }
+  }, 15000);
+}
+
+function answerCall() {
+  if (state.callState !== 'ringing') return;
+  state.callState = 'connected';
+  state.callStartTime = Date.now();
+  state.callElapsed = 0;
+  document.getElementById('callStatus').textContent = '通话中';
+  document.getElementById('callTimer').classList.add('show');
+  document.getElementById('callButtons').innerHTML = `
+    <button class="call-btn minimize" onclick="minimizeCall()">−</button>
+    <button class="call-btn hangup" onclick="hangupCall()">☎</button>
+  `;
+  if (state.callTimerInterval) clearInterval(state.callTimerInterval);
+  state.callTimerInterval = setInterval(() => {
+    state.callElapsed = Math.floor((Date.now() - state.callStartTime) / 1000);
+    document.getElementById('callTimer').textContent = formatDuration(state.callElapsed);
+    document.getElementById('miniTime').textContent = formatDuration(state.callElapsed).slice(0,5);
+  }, 1000);
+  // Record answered call
+  state.callHistory.push({
+    id: state.nextCallId++,
+    type: 'answered',
+    timestamp: Date.now(),
+    duration: 0 // Will update on hangup
+  });
+  saveState();
+}
+
+function hangupCall() {
+  if (state.callState === 'idle') return;
+  if (state.callTimerInterval) clearInterval(state.callTimerInterval);
+  state.callTimerInterval = null;
+  
+  if (state.callState === 'ringing') {
+    // Hung up before answering
+    state.callHistory.push({
+      id: state.nextCallId++,
+      type: 'hung',
+      timestamp: Date.now(),
+      duration: 0
+    });
+  } else if (state.callState === 'connected') {
+    // Update the last answered call with duration
+    const dur = Math.floor((Date.now() - state.callStartTime) / 1000);
+    for (let i = state.callHistory.length - 1; i >= 0; i--) {
+      if (state.callHistory[i].type === 'answered' && state.callHistory[i].duration === 0) {
+        state.callHistory[i].duration = dur;
+        break;
+      }
+    }
+  }
+  
+  state.callState = 'idle';
+  document.getElementById('callOverlay').classList.remove('active');
+  document.getElementById('callMini').classList.remove('show');
+  saveState();
+}
+
+function minimizeCall() {
+  if (state.callState !== 'connected') return;
+  state.callState = 'minimized';
+  document.getElementById('callOverlay').classList.remove('active');
+  const avatar = state.dream.avatar || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2732%27 height=%2732%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2716%27 fill=%27%23ffe0e8%27/%3E%3Ctext x=%2716%27 y=%2720%27 text-anchor=%27middle%27 fill=%27%23d6336c%27 font-size=%2716%27%3E💜%3C/text%3E%3C/svg%3E';
+  document.getElementById('miniAvatar').src = avatar;
+  document.getElementById('miniTime').textContent = formatDuration(state.callElapsed).slice(0,5);
+  document.getElementById('callMini').classList.add('show');
+}
+
+function expandCall() {
+  if (state.callState !== 'minimized') return;
+  state.callState = 'connected';
+  document.getElementById('callMini').classList.remove('show');
+  document.getElementById('callOverlay').classList.add('active');
+  document.getElementById('callStatus').textContent = '通话中';
+  document.getElementById('callTimer').classList.add('show');
+  document.getElementById('callButtons').innerHTML = `
+    <button class="call-btn minimize" onclick="minimizeCall()">−</button>
+    <button class="call-btn hangup" onclick="hangupCall()">☎</button>
+  `;
+  if (state.settings.callBg) {
+    document.getElementById('callCard').style.background = `url(${state.settings.callBg}) center/cover, linear-gradient(145deg,#1a1a2e,#16213e)`;
+  } else {
+    document.getElementById('callCard').style.background = 'linear-gradient(145deg,#1a1a2e,#16213e)';
+  }
+}
+
+// ===== CHECK-IN =====
+function triggerCheckin() {
+  if (state.callState !== 'idle') return;
+  // Get available cards
+  const allCards = state.cards;
+  if (allCards.length === 0) return;
+  
+  // Pick 3-10 random cards
+  const count = Math.min(3 + Math.floor(Math.random() * 8), allCards.length);
+  const shuffled = [...allCards].sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, count);
+  
+  const avatar = state.dream.avatar || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2744%27 height=%2744%27 viewBox=%270 0 44 44%27%3E%3Ccircle cx=%2722%27 cy=%2722%27 r=%2722%27 fill=%27%23ffe0e8%27/%3E%3Ctext x=%2722%27 y=%2726%27 text-anchor=%27middle%27 fill=%27%23d6336c%27 font-size=%2720%27%3E💜%3C/text%3E%3C/svg%3E';
+  document.getElementById('ciAvatar').src = avatar;
+  document.getElementById('ciName').textContent = state.dream.name || '沈屿';
+  
+  if (state.settings.checkinBg) {
+    document.getElementById('checkinCard').style.background = `url(${state.settings.checkinBg}) center/cover, var(--card)`;
+  } else {
+    document.getElementById('checkinCard').style.background = 'var(--card)';
+  }
+  
+  const messagesDiv = document.getElementById('ciMessages');
+  messagesDiv.innerHTML = selected.map(c => `<div class="ci-msg">${c.text}</div>`).join('');
+  
+  document.getElementById('checkinOverlay').classList.add('active');
+  
+  // Record in history
+  const msgText = selected.map(c => c.text).join(' | ');
+  state.checkinHistory.push({
+    id: state.nextCheckinId++,
+    message: msgText.length > 50 ? msgText.slice(0,50) + '…' : msgText,
+    timestamp: Date.now(),
+    fullMessages: selected.map(c => c.text)
+  });
+  saveState();
+  
+  // Send push notification
+  sendNotification(state.dream.name || '梦角', selected[0].text);
+  
+  // Auto close after 8 seconds
+  setTimeout(() => {
+    closeCheckin();
+  }, 8000);
+}
+
+function closeCheckin() {
+  document.getElementById('checkinOverlay').classList.remove('active');
+}
+
+// ===== NOTIFICATION =====
+function sendNotification(title, body) {
+  if (!state.settings.pushEnabled) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const notif = new Notification(title, {
+      body: body,
+      icon: state.dream.avatar || undefined,
+      tag: 'dream-check',
+      requireInteraction: false
+    });
+    setTimeout(() => notif.close(), 3000);
+  } catch(e) {}
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ===== RENDER ALL =====
+function renderAll() {
+  renderWordCards();
+  renderCallHistory();
+  renderCheckinHistory();
+  loadProfileForm();
+  loadDreamRoleForm();
+}
+
+// ===== SERVICE WORKER FOR PWA =====
+// Register service worker for push notifications if supported
+if ('serviceWorker' in navigator) {
+  // We'll create a minimal service worker inline via blob URL
+  // This enables push notifications
+  const swCode = `
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+    self.addEventListener('push', e => {
+      const data = e.data ? e.data.text() : '梦角来消息了';
+      const options = {
+        body: data,
+        icon: '/icon.png',
+        tag: 'dream-push',
+        requireInteraction: false
+      };
+      e.waitUntil(self.registration.showNotification('梦角查岗', options));
+    });
+    self.addEventListener('notificationclick', e => {
+      e.notification.close();
+      clients.openWindow('/');
+    });
+  `;
+  // We'll register this in the background
+  // For now just a placeholder - real SW requires a separate file
+}
+
+// ===== START =====
+init();
+
+// Handle clicks on overlay background to prevent accidental close
+document.querySelectorAll('.overlay-bg').forEach(bg => {
+  bg.addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+});
+
+// Click on checkin overlay background closes it
+document.getElementById('checkinOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCheckin();
+});
+
+console.log('💜 梦角查岗已启动！');
+</script>
+</body>
+</html>l
