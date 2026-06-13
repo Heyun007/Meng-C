@@ -871,10 +871,10 @@ function startRandomEvents() {
   setInterval(() => {
     if (state.callState !== 'idle') return; // Don't stack events
     // Random check: ~3% chance per check = roughly 1-2 times per hour on average
-    if (Math.random() < 0.04) {
+     {
       triggerRandomEvent();
     }
-  }, 30000);
+  }, 5000);
 }
 
 function triggerRandomEvent() {
