@@ -11,5 +11,5 @@ self.addEventListener('push', e => {
 });
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  clients.openWindow('/');
+  clients.openWindow('/Meng-C/');
 });
