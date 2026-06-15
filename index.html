@@ -859,10 +859,10 @@ function startRandomEvents() {
   setInterval(() => {
     if (state.callState !== 'idle') return; // Don't stack events
     // Random check: ~3% chance per check = roughly 1-2 times per hour on average
-     if (Math.random() < 0.08) {
+     if (Math.random() < 0.4) {
       triggerRandomEvent();
     }
-  }, 50000);
+  }, 60000);
 }
 
 function triggerRandomEvent() {
@@ -894,6 +894,7 @@ function triggerCall() {
   }
   document.getElementById('callOverlay').classList.add('active');
   document.getElementById('callMini').classList.remove('show');
+  sendNotification(state.dream.name || '梦角', '来电了…');
   
   // Auto-hangup after 15 seconds if not answered
   setTimeout(() => {
