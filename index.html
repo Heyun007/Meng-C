@@ -438,6 +438,11 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
 </div>
 
 <script>
+// 检测URL参数
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('action') === 'call') {
+  setTimeout(() => triggerCall(), 500);
+}
 // ===== STATE =====
 let state = {
   profile: { avatar: '', name: '我', status: '在线' },
@@ -862,7 +867,7 @@ function startRandomEvents() {
      if (Math.random() < 0.4) {
       triggerRandomEvent();
     }
-  }, 30000);
+  }, 50000);
 }
 
 function triggerRandomEvent() {
