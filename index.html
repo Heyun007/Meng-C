@@ -841,7 +841,7 @@ async function requestPushPermission() {
 async function registerSW() {
   if (!('serviceWorker' in navigator)) { showToast('不支持推送服务'); return; }
   try {
-    const reg = await navigator.serviceWorker.register('sw.js', {scope: '/'});
+    const reg = await navigator.serviceWorker.register('sw.js');
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array('BMzik6m7nFxbogkxYQ6M3-logfhmiADJrfHsYr2bDWZcVqlWq7Z3tdYhGCdSu2nMVA_Uy8elZcPeyN-S9hmMWs')
