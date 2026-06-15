@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
 <title>梦角查岗</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
@@ -825,41 +826,28 @@ function setupPush() {
 }
 
 async function requestPushPermission() {
-  if (!('Notification' in window)) { showToast('此浏览器不支持推送'); return; }
+  if (!('Notification' in window)) { showToast('不支持通知'); return; }
   if (Notification.permission === 'granted') {
     registerSW();
   } else if (Notification.permission !== 'denied') {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      registerSW();
-    } else {
-      showToast('请允许通知权限');
-      state.settings.pushEnabled = false;
-      document.getElementById('pushToggle').classList.remove('on');
-      saveState();
-    }
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') registerSW();
+    else { showToast('请允许通知权限'); state.settings.pushEnabled = false; document.getElementById('pushToggle').classList.remove('on'); saveState(); }
   } else {
-    showToast('通知已被拒绝，请在浏览器设置中开启');
-    state.settings.pushEnabled = false;
-    document.getElementById('pushToggle').classList.remove('on');
-    saveState();
+    showToast('通知已被拒绝'); state.settings.pushEnabled = false; document.getElementById('pushToggle').classList.remove('on'); saveState();
   }
 }
 
 async function registerSW() {
-  if (!('serviceWorker' in navigator)) { showToast('不支持 Service Worker'); return; }
+  if (!('serviceWorker' in navigator)) { showToast('不支持推送服务'); return; }
   try {
-    // Check if already registered
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    for (const reg of registrations) {
-      if (reg.scope && reg.scope.includes(location.origin)) {
-        showToast('推送已准备就绪');
-        return;
-      }
-    }
-    // We need to create a service worker file
-    // For this demo, we'll just show a toast
-    showToast('推送功能需部署到 HTTPS 服务器后生效');
+    const reg = await navigator.serviceWorker.register('sw.js', {scope: '/'});
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array('BMzik6m7nFxbogkxYQ6M3-logfhmiADJrfHsYr2bDWZcVqlWq7Z3tdYhGCdSu2nMVA_Uy8elZcPeyN-S9hmMWs')
+    });
+    localStorage.setItem('pushSub', JSON.stringify(sub));
+    showToast('推送已开启');
   } catch(e) {
     showToast('推送注册失败：' + e.message);
   }
@@ -1063,18 +1051,28 @@ function closeCheckin() {
 }
 
 // ===== NOTIFICATION =====
-function sendNotification(title, body) {
+async function sendNotification(title, body) {
   if (!state.settings.pushEnabled) return;
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
   try {
-    const notif = new Notification(title, {
+    const reg = await navigator.serviceWorker.ready;
+    reg.showNotification(title, {
       body: body,
-      icon: state.dream.avatar || undefined,
-      tag: 'dream-check',
-      requireInteraction: false
+      icon: state.dream.avatar || '',
+      tag: 'dream-' + Date.now(),
+      requireInteraction: true,
+      vibrate: [200,100,200]
     });
-    setTimeout(() => notif.close(), 3000);
-  } catch(e) {}
+  } catch(e) {
+    const n = new Notification(title, {
+      body: body,
+      icon: state.dream.avatar || '',
+      tag: 'dream-' + Date.now(),
+      requireInteraction: true
+    });
+    setTimeout(() => n.close(), 5000);
+  }
 }
 
 // ===== TOAST =====
@@ -1139,4 +1137,4 @@ document.getElementById('checkinOverlay').addEventListener('click', function(e) 
 console.log('💜 梦角查岗已启动！');
 </script>
 </body>
-</html>l
+</html>
