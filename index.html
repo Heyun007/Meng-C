@@ -867,12 +867,12 @@ function startRandomEvents() {
      if (Math.random() < 0.4) {
       triggerRandomEvent();
     }
-  }, 30000);
+  }, 45000);
 }
 
 function triggerRandomEvent() {
   const r = Math.random();
-  if (r < 0.4) {
+  if (r < 0.2) {
     triggerCall();
   } else {
     triggerCheckin();
