@@ -495,6 +495,7 @@ let state = {
 function init() {
   loadState();
   loadChatMessages();
+  renderChatMessages();
   renderAll();
   updateTime();
   setInterval(updateTime, 1000);
@@ -910,6 +911,7 @@ function triggerRandomEvent() {
     if (allCards.length > 0) {
       const card = allCards[Math.floor(Math.random() * allCards.length)];
       chatMessages.push({ from: 'dream', text: card.text, time: Date.now() });
+            saveChatMessages();
       // 如果当前在聊天页面，刷新显示
       const page = document.getElementById('pageChat');
       if (page.classList.contains('active')) {
@@ -1195,12 +1197,12 @@ function renderChatMessages() {
         </div>
       </div>`;
     } else {
-      return `<div style="display:flex;justify-content:flex-start;align-items:flex-end;gap:8px;margin-bottom:6px;">
-        <img src="${dreamAvatar}" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;">
+            return `<div style="display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;margin-bottom:6px;">
         <div style="max-width:70%;">
-          <div style="background:#e8e8ed;border-radius:12px 12px 12px 4px;padding:8px 14px;font-size:14px;color:var(--text);">${m.text}</div>
-          <span style="font-size:10px;color:var(--gray);display:block;margin-top:2px;">${timeStr}</span>
+          <div style="background:#e8e8ed;border-radius:12px 12px 4px 12px;padding:8px 14px;font-size:14px;color:var(--text);">${m.text}</div>
+          <span style="font-size:10px;color:var(--gray);display:block;text-align:right;margin-top:2px;">${timeStr}</span>
         </div>
+        <img src="${userAvatar}" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;">
       </div>`;
     }
   }).join('');
