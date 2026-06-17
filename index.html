@@ -861,15 +861,14 @@ async function registerSW() {
 // ===== RANDOM EVENTS =====
 function startRandomEvents() {
   // Check every 30 seconds if an event should trigger
-setTimeout(() => {
-  setInterval(() => {
+setInterval(() => {
     if (state.callState !== 'idle') return; // Don't stack events
     // Random check: ~3% chance per check = roughly 1-2 times per hour on average
      if (Math.random() < 0.4) {
       triggerRandomEvent();
     }
   }, 45000);
-}, 10000);
+}
 
 function triggerRandomEvent() {
   const r = Math.random();
