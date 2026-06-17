@@ -494,6 +494,7 @@ let state = {
 // ===== INIT =====
 function init() {
   loadState();
+  loadChatMessages();
   renderAll();
   updateTime();
   setInterval(updateTime, 1000);
@@ -801,7 +802,7 @@ function handleCheckinBg(e) {
 }
 
 function backupData() {
-  const data = JSON.stringify(state, null, 2);
+  const data = JSON.stringify({ state: state, chatMessages: chatMessages }, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -818,6 +819,7 @@ function restoreData(e) {
   reader.onload = function(ev) {
     try {
       const data = JSON.parse(ev.target.result);
+          if (data.chatMessages) chatMessages = data.chatMessages;
       // Merge but keep structure
       if (data.profile) state.profile = data.profile;
       if (data.dream) state.dream = data.dream;
@@ -1131,6 +1133,17 @@ async function sendNotification(title, body) {
 
   // ===== CHAT =====
 let chatMessages = [];
+  
+  function saveChatMessages() {
+  localStorage.setItem('dreamChat', JSON.stringify(chatMessages));
+}
+
+function loadChatMessages() {
+  try {
+    const saved = localStorage.getItem('dreamChat');
+    if (saved) chatMessages = JSON.parse(saved);
+  } catch(e) {}
+}
 
 function sendChatMsg() {
   const input = document.getElementById('chatInput');
@@ -1139,6 +1152,7 @@ function sendChatMsg() {
   chatMessages.push({ from: 'user', text: text, time: Date.now() });
   input.value = '';
   renderChatMessages();
+  saveChatMessages();
   setTimeout(() => dreamReply(), 1000 + Math.random() * 2000);
 }
 
@@ -1147,6 +1161,7 @@ function dreamReply() {
   if (allCards.length === 0) {
     chatMessages.push({ from: 'dream', text: '…', time: Date.now() });
     renderChatMessages();
+    saveChatMessages();
     return;
   }
   const card = allCards[Math.floor(Math.random() * allCards.length)];
@@ -1170,8 +1185,10 @@ function renderChatMessages() {
     const isUser = m.from === 'user';
     const time = new Date(m.time);
     const timeStr = String(time.getHours()).padStart(2,'0') + ':' + String(time.getMinutes()).padStart(2,'0');
-    if (isUser) {
+        if (isUser) {
+      const userAvatar = state.profile.avatar || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2736%27 height=%2736%27 viewBox=%270 0 36 36%27%3E%3Ccircle cx=%2718%27 cy=%2718%27 r=%2718%27 fill=%27%23e8e8ed%27/%3E%3Ctext x=%2718%27 y=%2722%27 text-anchor=%27middle%27 fill=%27%2386868b%27 font-size=%2718%27%3E👤%3C/text%3E%3C/svg%3E';
       return `<div style="display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;margin-bottom:6px;">
+        <img src="${userAvatar}" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;">
         <div style="max-width:70%;">
           <div style="background:#e8e8ed;border-radius:12px 12px 4px 12px;padding:8px 14px;font-size:14px;color:var(--text);">${m.text}</div>
           <span style="font-size:10px;color:var(--gray);display:block;text-align:right;margin-top:2px;">${timeStr}</span>
