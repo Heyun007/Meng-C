@@ -1168,11 +1168,6 @@ function dreamReply() {
     chatMessages.push({ from: 'dream', text: '…', time: Date.now() });
     renderChatMessages();
     saveChatMessages();
-    return;
-  }
-  const card = allCards[Math.floor(Math.random() * allCards.length)];
-  chatMessages.push({ from: 'dream', text: card.text, time: Date.now() });
-  renderChatMessages();
 }
 
 function renderChat() {
