@@ -911,7 +911,8 @@ function triggerRandomEvent() {
     if (allCards.length > 0) {
       const card = allCards[Math.floor(Math.random() * allCards.length)];
       chatMessages.push({ from: 'dream', text: card.text, time: Date.now() });
-            saveChatMessages();
+        sendNotification(state.dream.name || '梦角', card.text);    
+      saveChatMessages();
       // 如果当前在聊天页面，刷新显示
       const page = document.getElementById('pageChat');
       if (page.classList.contains('active')) {
@@ -1168,6 +1169,7 @@ function dreamReply() {
     var replyText = '…';
   }
   chatMessages.push({ from: 'dream', text: replyText, time: Date.now() });
+  sendNotification(state.dream.name || '梦角', replyText);
   renderChatMessages();
   saveChatMessages();
 }
