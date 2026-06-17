@@ -1155,7 +1155,7 @@ function sendChatMsg() {
   input.value = '';
   renderChatMessages();
   saveChatMessages();
-  dreamReply();
+  setTimeout(() => dreamReply(), 3000 + Math.random() * 57000);
 }
 
 function dreamReply() {
