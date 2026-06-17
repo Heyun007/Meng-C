@@ -1159,16 +1159,18 @@ function sendChatMsg() {
 }
 
 function dreamReply() {
-  const allCards = state.cards || [];
-  let replyText = '我在呢';
-  if (allCards.length > 0) {
-    const card = allCards[Math.floor(Math.random() * allCards.length)];
-    if (card && card.text) replyText = card.text;
+  var cards = state.cards || [];
+  if (cards.length > 0) {
+    var idx = Math.floor(Math.random() * cards.length);
+    var card = cards[idx];
+    var replyText = card.text || '…';
+  } else {
+    var replyText = '…';
   }
-    chatMessages.push({ from: 'dream', text: '…', time: Date.now() });
-    renderChatMessages();
+  chatMessages.push({ from: 'dream', text: replyText, time: Date.now() });
+  renderChatMessages();
+  saveChatMessages();
 }
-
 
 function renderChat() {
   renderChatMessages();
