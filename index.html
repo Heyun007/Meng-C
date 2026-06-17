@@ -1150,7 +1150,7 @@ function loadChatMessages() {
 function sendChatMsg() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
-  if (!text) return;
+  if (text.length === 0) return;
   chatMessages.push({ from: 'user', text: text, time: Date.now() });
   input.value = '';
   renderChatMessages();
@@ -1159,8 +1159,12 @@ function sendChatMsg() {
 }
 
 function dreamReply() {
-  const allCards = state.cards;
-  if (allCards.length === 0) {
+  const allCards = state.cards || [];
+  let replyText = '…';
+  if (allCards.length > 0) {
+    const card = allCards[Math.floor(Math.random() * allCards.length)];
+    if (card && card.text) replyText = card.text;
+  }
     chatMessages.push({ from: 'dream', text: '…', time: Date.now() });
     renderChatMessages();
     saveChatMessages();
