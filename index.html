@@ -1159,8 +1159,14 @@ function sendChatMsg() {
 }
 
 function dreamReply() {
-  chatMessages.push({ from: 'dream', text: '我回了！', time: Date.now() });
-  document.getElementById('chatMessages').innerHTML += '<div style="display:flex;justify-content:flex-start;align-items:flex-end;gap:8px;margin-bottom:6px;"><div style="max-width:70%;"><div style="background:#e8e8ed;border-radius:12px 12px 12px 4px;padding:8px 14px;font-size:14px;color:var(--text);">我回了！</div></div></div>';
+  const allCards = state.cards || [];
+  let replyText = '我在呢';
+  if (allCards.length > 0) {
+    const card = allCards[Math.floor(Math.random() * allCards.length)];
+    if (card && card.text) replyText = card.text;
+  }
+    chatMessages.push({ from: 'dream', text: '…', time: Date.now() });
+    renderChatMessages();
 }
 
 
@@ -1170,23 +1176,39 @@ function renderChat() {
 }
 
 function renderChatMessages() {
-  const container = document.getElementById('chatMessages');
+  var container = document.getElementById('chatMessages');
   if (!container) return;
   if (chatMessages.length === 0) {
-    container.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--gray);font-size:14px;">开始和梦角聊天吧</div>';
+    container.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#86868b;font-size:14px;">开始和梦角聊天吧</div>';
     return;
   }
-  let html = '';
-  const dreamAvatar = state.dream.avatar || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2736%27 height=%2736%27 viewBox=%270 0 36 36%27%3E%3Ccircle cx=%2718%27 cy=%2718%27 r=%2718%27 fill=%27%23ffe0e8%27/%3E%3Ctext x=%2718%27 y=%2722%27 text-anchor=%27middle%27 fill=%27%23d6336c%27 font-size=%2718%27%3E💜%3C/text%3E%3C/svg%3E';
-  const userAvatar = state.profile.avatar || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2736%27 height=%2736%27 viewBox=%270 0 36 36%27%3E%3Ccircle cx=%2718%27 cy=%2718%27 r=%2718%27 fill=%27%23e8e8ed%27/%3E%3Ctext x=%2718%27 y=%2722%27 text-anchor=%27middle%27 fill=%27%2386868b%27 font-size=%2718%27%3E👤%3C/text%3E%3C/svg%3E';
-  for (let i = 0; i < chatMessages.length; i++) {
-    const m = chatMessages[i];
-    const time = new Date(m.time);
-    const timeStr = String(time.getHours()).padStart(2,'0') + ':' + String(time.getMinutes()).padStart(2,'0');
+  var html = '';
+  var dreamAvatar = state.dream.avatar || '';
+  var userAvatar = state.profile.avatar || '';
+  for (var i = 0; i < chatMessages.length; i++) {
+    var m = chatMessages[i];
+    var time = new Date(m.time);
+    var h = time.getHours();
+    var min = time.getMinutes();
+    if (h < 10) h = '0' + h;
+    if (min < 10) min = '0' + min;
+    var timeStr = h + ':' + min;
     if (m.from === 'user') {
-      html += '<div style="display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;margin-bottom:6px;"><div style="max-width:70%;"><div style="background:#e8e8ed;border-radius:12px 12px 4px 12px;padding:8px 14px;font-size:14px;color:var(--text);">' + m.text + '</div><span style="font-size:10px;color:var(--gray);display:block;text-align:right;margin-top:2px;">' + timeStr + '</span></div><img src="' + userAvatar + '" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;"></div>';
+      html += '<div style="display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;margin-bottom:6px;">';
+      html += '<div style="max-width:70%;">';
+      html += '<div style="background:#e8e8ed;border-radius:12px 12px 4px 12px;padding:8px 14px;font-size:14px;color:#1d1d1f;">' + m.text + '</div>';
+      html += '<span style="font-size:10px;color:#86868b;display:block;text-align:right;margin-top:2px;">' + timeStr + '</span>';
+      html += '</div>';
+      html += '<img src="' + userAvatar + '" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;">';
+      html += '</div>';
     } else {
-      html += '<div style="display:flex;justify-content:flex-start;align-items:flex-end;gap:8px;margin-bottom:6px;"><img src="' + dreamAvatar + '" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;"><div style="max-width:70%;"><div style="background:#e8e8ed;border-radius:12px 12px 12px 4px;padding:8px 14px;font-size:14px;color:var(--text);">' + m.text + '</div><span style="font-size:10px;color:var(--gray);display:block;margin-top:2px;">' + timeStr + '</span></div></div>';
+      html += '<div style="display:flex;justify-content:flex-start;align-items:flex-end;gap:8px;margin-bottom:6px;">';
+      html += '<img src="' + dreamAvatar + '" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;">';
+      html += '<div style="max-width:70%;">';
+      html += '<div style="background:#e8e8ed;border-radius:12px 12px 12px 4px;padding:8px 14px;font-size:14px;color:#1d1d1f;">' + m.text + '</div>';
+      html += '<span style="font-size:10px;color:#86868b;display:block;margin-top:2px;">' + timeStr + '</span>';
+      html += '</div>';
+      html += '</div>';
     }
   }
   container.innerHTML = html;
