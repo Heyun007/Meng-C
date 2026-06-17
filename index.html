@@ -1159,15 +1159,10 @@ function sendChatMsg() {
 }
 
 function dreamReply() {
-  const allCards = state.cards || [];
-  let replyText = '我在呢';
-  if (allCards.length > 0) {
-    const card = allCards[Math.floor(Math.random() * allCards.length)];
-    if (card && card.text) replyText = card.text;
-  }
-    chatMessages.push({ from: 'dream', text: '…', time: Date.now() });
-    renderChatMessages();
+  chatMessages.push({ from: 'dream', text: '我回了！', time: Date.now() });
+  document.getElementById('chatMessages').innerHTML += '<div style="display:flex;justify-content:flex-start;align-items:flex-end;gap:8px;margin-bottom:6px;"><div style="max-width:70%;"><div style="background:#e8e8ed;border-radius:12px 12px 12px 4px;padding:8px 14px;font-size:14px;color:var(--text);">我回了！</div></div></div>';
 }
+
 
 function renderChat() {
   renderChatMessages();
