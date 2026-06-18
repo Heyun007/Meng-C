@@ -296,6 +296,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
       <input type="text" id="secretInput" readonly placeholder="等待对暗号…" style="flex:1;padding:10px 14px;border:1px solid #ffd6e0;border-radius:10px;font-size:13px;outline:none;background:#fff;color:#333;text-align:center;">
       <button onclick="secretCode()" style="padding:10px 16px;border:none;border-radius:10px;background:#ffd6e0;color:#ff6b8a;font-size:13px;font-weight:500;cursor:pointer;">对暗号</button>
     </div>
+   <script>renderConnection();setTimeout(function(){setupLongPress();},100);</script>
   </div>
 </div>
   
@@ -593,7 +594,6 @@ function navigateTo(pageId) {
     if (pageId === 'pageProfile') loadProfileForm();
     if (pageId === 'pageDreamRole') loadDreamRoleForm();
     if (pageId === 'pageChat') renderChat();
-    if (pageId === 'pageConnection') { setTimeout(() => { renderConnection(); setupLongPress(); }, 50);
   } else {
     // Home
     document.querySelector('.main-content').style.display = 'block';
