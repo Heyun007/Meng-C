@@ -825,19 +825,16 @@ function restoreData(e) {
   reader.onload = function(ev) {
     try {
       const data = JSON.parse(ev.target.result);
-          if (data.chatMessages) chatMessages = data.chatMessages;
-      // Merge but keep structure
-      if (data.profile) state.profile = data.profile;
-      if (data.dream) state.dream = data.dream;
-      if (data.categories) state.categories = data.categories;
-      if (data.cards) state.cards = data.cards;
-      if (data.callHistory) state.callHistory = data.callHistory;
-      if (data.checkinHistory) state.checkinHistory = data.checkinHistory;
-      if (data.settings) state.settings = data.settings;
-      if (data.nextCallId) state.nextCallId = data.nextCallId;
-      if (data.nextCheckinId) state.nextCheckinId = data.nextCheckinId;
+      // 新格式：{ state: {...}, chatMessages: [...] }
+      if (data.state) {
+        Object.assign(state, data.state);
+        if (data.chatMessages) chatMessages = data.chatMessages;
+      } else {
+        // 旧格式：直接是 state 对象
+        Object.assign(state, data);
+      }
       saveState();
-      renderAll();
+      if (typeof renderAll === 'function') renderAll();
       showToast('数据已恢复');
     } catch(e) {
       showToast('备份文件格式错误');
@@ -845,6 +842,7 @@ function restoreData(e) {
   };
   reader.readAsText(file);
 }
+
 
 function togglePush() {
   state.settings.pushEnabled = !state.settings.pushEnabled;
