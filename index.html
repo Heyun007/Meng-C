@@ -832,6 +832,7 @@ function restoreData(e) {
       } else {
         // 旧格式：直接是 state 对象
         Object.assign(state, data);
+        if (data.chatMessages) chatMessages = data.chatMessages;
       }
       saveState();
       if (typeof renderAll === 'function') renderAll();
