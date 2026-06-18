@@ -1179,8 +1179,17 @@ async function sendNotification(title, body) {
     setTimeout(() => n.close(), 5000);
   }
 }
-// ===== CONNECTION =====
-let connectionState = { stage: null, percent: 0, timer: null, changeCount: 0, maxChanges: 0, isLongPressing: false, longPressTimer: null };
+
+  // ===== CONNECTION =====
+let connectionState = {
+  stage: null,
+  percent: 0,
+  timer: null,
+  changeCount: 0,
+  maxChanges: 0,
+  isLongPressing: false,
+  longPressTimer: null
+};
 const connectionStages = [
   { min: 0, max: 0, text: '完全没连接上！', weight: 1 },
   { min: 1, max: 10, text: '连接超级不稳定！', weight: 2 },
@@ -1191,13 +1200,122 @@ const connectionStages = [
   { min: 81, max: 96, text: '连接很通畅！偶尔不太稳', weight: 2 },
   { min: 97, max: 100, text: '连接十分通顺！', weight: 1 }
 ];
-function pickStage(){let t=connectionStages.reduce((s,s2)=>s+s2.weight,0),r=Math.random()*t;for(const s of connectionStages){r-=s.weight;if(r<=0)return s}return connectionStages[0]}
-function randPct(s){return s.min+Math.floor(Math.random()*(s.max-s.min+1))}
-function startConnectionCycle(){let st=pickStage();connectionState.stage=st;connectionState.changeCount=0;connectionState.maxChanges=3+Math.floor(Math.random()*3);connectionState.percent=randPct(st);updateUI();if(connectionState.timer)clearInterval(connectionState.timer);let el=0;connectionState.timer=setInterval(()=>{el++;if(el>=600){clearInterval(connectionState.timer);connectionState.timer=null;startConnectionCycle();return}if(connectionState.isLongPressing)return;if(connectionState.changeCount<connectionState.maxChanges&&el%10===0){connectionState.percent=randPct(st);connectionState.changeCount++;updateUI()}},1000)}
-function updateUI(){const p=document.getElementById('connectionPercent'),s=document.getElementById('connectionStatus');if(p)p.textContent=connectionState.percent+'%';if(s){const st=connectionStages.find(s2=>connectionState.percent>=s2.min&&connectionState.percent<=s2.max);s.textContent=st?st.text:'连接异常'}}
-function renderConnection(){startConnectionCycle();const b=document.getElementById('longPressBtn');if(b){b.textContent='长按';b.style.background='#ffd6e0'}const bar=document.getElementById('progressBar');if(bar)bar.style.height='0%'}
-function setupLongPress(){const b=document.getElementById('longPressBtn');if(!b)return;b.addEventListener('mousedown',function(e){e.preventDefault();if(connectionState.isLongPressing)return;connectionState.isLongPressing=true;const btn=document.getElementById('longPressBtn'),bar=document.getElementById('progressBar');btn.textContent='…';btn.style.background='#ffb3c6';bar.style.height='0%';let p=0;const ts=pickStage(),tp=randPct(ts);connectionState.longPressTimer=setInterval(()=>{p+=2;if(p>=100){p=100;clearInterval(connectionState.longPressTimer);connectionState.longPressTimer=null;connectionState.percent=tp;connectionState.stage=ts;updateUI();btn.textContent='长按';btn.style.background='#ffd6e0';bar.style.height='100%';connectionState.isLongPressing=false;return}bar.style.height=p+'%';if(p%10===0){connectionState.percent=randPct(ts);updateUI()}},30)});b.addEventListener('touchstart',b._md||(b._md=arguments.callee));b.addEventListener('mouseup',function(e){e.preventDefault();if(connectionState.longPressTimer){clearInterval(connectionState.longPressTimer);connectionState.longPressTimer=null}const btn=document.getElementById('longPressBtn');if(btn){btn.textContent='长按';btn.style.background='#ffd6e0'}connectionState.isLongPressing=false});b.addEventListener('mouseleave',b._mu||(b._mu=arguments.callee));b.addEventListener('touchend',b._mu);b.addEventListener('touchcancel',b._mu)}
-function secretCode(){const c=state.cards||[];if(c.length===0){document.getElementById('secretInput').value='没有字卡呢…';return}const card=c[Math.floor(Math.random()*c.length)];document.getElementById('secretInput').value=card.text||'…'}
+function pickStage() {
+  var total = 0;
+  for (var i = 0; i < connectionStages.length; i++) total += connectionStages[i].weight;
+  var r = Math.random() * total;
+  for (var i = 0; i < connectionStages.length; i++) {
+    r -= connectionStages[i].weight;
+    if (r <= 0) return connectionStages[i];
+  }
+  return connectionStages[0];
+}
+function randPct(stage) {
+  return stage.min + Math.floor(Math.random() * (stage.max - stage.min + 1));
+}
+function startConnectionCycle() {
+  var st = pickStage();
+  connectionState.stage = st;
+  connectionState.changeCount = 0;
+  connectionState.maxChanges = 3 + Math.floor(Math.random() * 3);
+  connectionState.percent = randPct(st);
+  updateUI();
+  if (connectionState.timer) clearInterval(connectionState.timer);
+  var el = 0;
+  connectionState.timer = setInterval(function() {
+    el++;
+    if (el >= 600) {
+      clearInterval(connectionState.timer);
+      connectionState.timer = null;
+      startConnectionCycle();
+      return;
+    }
+    if (connectionState.isLongPressing) return;
+    if (connectionState.changeCount < connectionState.maxChanges && el % 10 === 0) {
+      connectionState.percent = randPct(st);
+      connectionState.changeCount++;
+      updateUI();
+    }
+  }, 1000);
+}
+function updateUI() {
+  var p = document.getElementById('connectionPercent');
+  var s = document.getElementById('connectionStatus');
+  if (p) p.textContent = connectionState.percent + '%';
+  if (s) {
+    var found = null;
+    for (var i = 0; i < connectionStages.length; i++) {
+      if (connectionState.percent >= connectionStages[i].min && connectionState.percent <= connectionStages[i].max) {
+        found = connectionStages[i];
+        break;
+      }
+    }
+    s.textContent = found ? found.text : '连接异常';
+  }
+}
+function renderConnection() {
+  startConnectionCycle();
+  var b = document.getElementById('longPressBtn');
+  if (b) { b.textContent = '长按'; b.style.background = '#ffd6e0'; }
+  var bar = document.getElementById('progressBar');
+  if (bar) bar.style.height = '0%';
+}
+function setupLongPress() {
+  var b = document.getElementById('longPressBtn');
+  if (!b) return;
+  b.onmousedown = function(e) {
+    e.preventDefault();
+    if (connectionState.isLongPressing) return;
+    connectionState.isLongPressing = true;
+    var btn = document.getElementById('longPressBtn');
+    var bar = document.getElementById('progressBar');
+    if (btn) { btn.textContent = '…'; btn.style.background = '#ffb3c6'; }
+    if (bar) bar.style.height = '0%';
+    var p = 0;
+    var ts = pickStage();
+    var tp = randPct(ts);
+    connectionState.longPressTimer = setInterval(function() {
+      p += 2;
+      if (p >= 100) {
+        p = 100;
+        clearInterval(connectionState.longPressTimer);
+        connectionState.longPressTimer = null;
+        connectionState.percent = tp;
+        connectionState.stage = ts;
+        updateUI();
+        if (btn) { btn.textContent = '长按'; btn.style.background = '#ffd6e0'; }
+        if (bar) bar.style.height = '100%';
+        connectionState.isLongPressing = false;
+        return;
+      }
+      if (bar) bar.style.height = p + '%';
+      if (p % 10 === 0) {
+        connectionState.percent = randPct(ts);
+        updateUI();
+      }
+    }, 30);
+  };
+  b.ontouchstart = b.onmousedown;
+  b.onmouseup = function(e) {
+    e.preventDefault();
+    if (connectionState.longPressTimer) {
+      clearInterval(connectionState.longPressTimer);
+      connectionState.longPressTimer = null;
+    }
+    var btn = document.getElementById('longPressBtn');
+    if (btn) { btn.textContent = '长按'; btn.style.background = '#ffd6e0'; }
+    connectionState.isLongPressing = false;
+  };
+  b.onmouseleave = b.onmouseup;
+  b.ontouchend = b.onmouseup;
+  b.ontouchcancel = b.onmouseup;
+}
+function secretCode() {
+  var c = state.cards || [];
+  if (c.length === 0) { document.getElementById('secretInput').value = '没有字卡呢…'; return; }
+  var card = c[Math.floor(Math.random() * c.length)];
+  document.getElementById('secretInput').value = card.text || '…';
+}
 
   // ===== CHAT =====
 let chatMessages = [];
