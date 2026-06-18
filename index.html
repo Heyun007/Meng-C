@@ -339,6 +339,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
     <div class="batch-add-area" style="margin-top:16px">
       <label style="font-size:13px;font-weight:500;color:var(--gray);display:block;margin-bottom:4px">批量添加字卡（每行一个）</label>
       <textarea id="batchText" placeholder="怎么还没睡？&#10;又在看手机？&#10;想我了没？"></textarea>
+      <select id="batchCategory" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:8px;outline:none;background:var(--card);color:var(--text);"></select>
       <div class="batch-actions">
         <button class="btn-add" onclick="batchAddCards()">批量添加</button>
         <button class="btn-clear" onclick="document.getElementById('batchText').value=''">清空</button>
@@ -639,6 +640,10 @@ function saveDreamRole() {
 
 // ===== WORD CARDS =====
 function renderWordCards() {
+    const catSelect = document.getElementById('batchCategory');
+  if (catSelect) {
+    catSelect.innerHTML = state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }
   const container = document.getElementById('wordCardsContainer');
   container.innerHTML = '';
   state.categories.forEach(cat => {
@@ -717,7 +722,7 @@ function batchAddCards() {
   const text = document.getElementById('batchText').value;
   const lines = text.split('\n').map(s => s.trim()).filter(s => s);
   if (lines.length === 0) { showToast('请输入字卡'); return; }
-  const targetCat = state.categories[0] ? state.categories[0].id : 'default';
+  const targetCat = document.getElementById('batchCategory').value || state.categories[0]?.id || 'default';
   lines.forEach(line => {
     state.cards.push({ id: 'card_' + Date.now() + '_' + Math.random().toString(36).slice(2,8), text: line, cat: targetCat });
   });
