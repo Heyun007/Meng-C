@@ -169,18 +169,12 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
 /* Animations */
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 @keyframes popIn{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
-@keyframes heartBeat {
-  0% { transform: scale(1); }
-  25% { transform: scale(1.03); }
-  50% { transform: scale(1); }
-  75% { transform: scale(1.02); }
-  100% { transform: scale(1); }
 }
   
 /* Toast */
 .toast{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;z-index:100;display:none;animation:fadeIn 0.2s;backdrop-filter:blur(10px);}
 .toast.show{display:block;}
-#longPressBtn { touch-action: none; -webkit-touch-callout: none; }
+
 /* Responsive image */
 .img-fit{width:100%;height:auto;object-fit:cover;}
 </style>
@@ -234,14 +228,6 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
       </div>
       <div class="feature-arrow">›</div>
     </div>
-    <div class="feature-item" onclick="navigateTo('pageConnection')">
-     <div class="feature-icon pink">💗</div>
-      <div class="feature-text">
-        <h3>连接检查</h3>
-        <p>查看你和梦角的连接程度</p>
-      </div>
-      <div class="feature-arrow">›</div>
-    </div>
     <div class="feature-item" onclick="navigateTo('pageCallHistory')">
       <div class="feature-icon green">📞</div>
       <div class="feature-text">
@@ -271,33 +257,6 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
      <button onclick="triggerCheckin()"style="fiex:1;padding:10px;border:none;border-radius:12px;background:#ff9500;coior:#fff;font-size:13px;">测试查岗</button>
     </dit>
  </dit>
-</div>
-
-  <!-- ===== PAGE: Connection ===== -->
-<div class="page" id="pageConnection" style="background:#ffffff;">
-  <div class="page-header" style="background:#ffffff;border-bottom:1px solid #eee;">
-    <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
-    <h2>连接检查</h2>
-  </div>
-  <div class="page-body" style="background:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:24px;">
-    <div style="position:relative;width:200px;height:180px;margin-bottom:4px;display:flex;justify-content:center;">
-      <div id="heartContainer" style="width:160px;height:150px;display:flex;align-items:center;justify-content:center;animation:heartBeat 2s ease-in-out infinite;position:relative;">
-        <div style="width:180px;height:150px;background:#ffd6e0;display:flex;align-items:center;justify-content:center;clip-path:path('M90,140 C0,70 10,-10 90,20 C170,-10 180,70 90,140 Z');">
-          <span id="connectionPercent" style="font-size:34px;font-weight:700;color:#ff6b8a;">0%</span>
-        </div>
-      </div>
-      <div style="position:absolute;right:-8px;top:15px;width:10px;height:130px;background:#e8e8ed;border-radius:5px;overflow:hidden;">
-        <div id="progressBar" style="position:absolute;bottom:0;width:100%;height:0%;background:linear-gradient(to top,#ffb3c6,#ff6b8a);border-radius:5px;transition:height 0.1s;"></div>
-      </div>
-    </div>
-    <div id="connectionStatus" style="font-size:13px;color:#ff6b8a;font-weight:500;margin-bottom:20px;min-height:18px;text-align:center;">完全没连接上！</div>
-    <button id="longPressBtn" style="width:64px;height:64px;border-radius:50%;border:2px solid #ffb3c6;background:#ffd6e0;color:#ff6b8a;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:20px;touch-action:none;user-select:none;outline:none;box-shadow:0 2px 12px rgba(255,107,138,0.15);">长按</button>
-    <div style="display:flex;gap:8px;width:80%;max-width:280px;">
-      <input type="text" id="secretInput" readonly placeholder="等待对暗号…" style="flex:1;padding:10px 14px;border:1px solid #ffd6e0;border-radius:10px;font-size:13px;outline:none;background:#fff;color:#333;text-align:center;">
-      <button onclick="secretCode()" style="padding:10px 16px;border:none;border-radius:10px;background:#ffd6e0;color:#ff6b8a;font-size:13px;font-weight:500;cursor:pointer;">对暗号</button>
-    </div>
-   <script>renderConnection();setTimeout(function(){setupLongPress();},100);</script>
-  </div>
 </div>
   
   <!-- ===== PAGE: Chat ===== -->
@@ -1178,90 +1137,6 @@ async function sendNotification(title, body) {
     });
     setTimeout(() => n.close(), 5000);
   }
-}
-
-  // ===== CONNECTION =====
-var connectionState = {stage:null,percent:0,timer:null,changeCount:0,maxChanges:0,isLongPressing:false,longPressTimer:null};
-var connectionStages = [
-  {min:0,max:0,text:'完全没连接上！',weight:1},
-  {min:1,max:10,text:'连接超级不稳定！',weight:2},
-  {min:11,max:25,text:'连接混乱！',weight:3},
-  {min:26,max:40,text:'连接不太稳定',weight:5},
-  {min:41,max:59,text:'一半一半，不太稳定',weight:5},
-  {min:60,max:80,text:'比较通畅，有点小混乱',weight:3},
-  {min:81,max:96,text:'连接很通畅！偶尔不太稳',weight:2},
-  {min:97,max:100,text:'连接十分通顺！',weight:1}
-];
-function pickStage(){
-  var total=0,i,r;
-  for(i=0;i<connectionStages.length;i++)total+=connectionStages[i].weight;
-  r=Math.random()*total;
-  for(i=0;i<connectionStages.length;i++){r-=connectionStages[i].weight;if(r<=0)return connectionStages[i];}
-  return connectionStages[0];
-}
-function randPct(s){return s.min+Math.floor(Math.random()*(s.max-s.min+1));}
-function startConnectionCycle(){
-  var st=pickStage(),el=0;
-  connectionState.stage=st;connectionState.changeCount=0;connectionState.maxChanges=3+Math.floor(Math.random()*3);
-  connectionState.percent=randPct(st);updateUI();
-  if(connectionState.timer)clearInterval(connectionState.timer);
-  connectionState.timer=setInterval(function(){
-    el++;if(el>=600){clearInterval(connectionState.timer);connectionState.timer=null;startConnectionCycle();return;}
-    if(connectionState.isLongPressing)return;
-    if(connectionState.changeCount<connectionState.maxChanges&&el%10===0){
-      connectionState.percent=randPct(st);connectionState.changeCount++;updateUI();
-    }
-  },1000);
-}
-function updateUI(){
-  var p=document.getElementById('connectionPercent'),s=document.getElementById('connectionStatus'),i,found=null;
-  if(p)p.textContent=connectionState.percent+'%';
-  if(s){for(i=0;i<connectionStages.length;i++){if(connectionState.percent>=connectionStages[i].min&&connectionState.percent<=connectionStages[i].max){found=connectionStages[i];break;}}s.textContent=found?found.text:'连接异常';}
-}
-function renderConnection(){
-  startConnectionCycle();
-  var b=document.getElementById('longPressBtn'),bar=document.getElementById('progressBar');
-  if(b){b.textContent='长按';b.style.background='#ffd6e0';}
-  if(bar)bar.style.height='0%';
-}
-function setupLongPress(){
-  var b=document.getElementById('longPressBtn');
-  if(!b)return;
-  b.onmousedown=function(e){
-    e.preventDefault();
-    if(connectionState.isLongPressing)return;
-    connectionState.isLongPressing=true;
-    var btn=document.getElementById('longPressBtn'),bar=document.getElementById('progressBar'),p=0,ts=pickStage(),tp=randPct(ts);
-    btn.textContent='…';btn.style.background='#ffb3c6';bar.style.height='0%';
-    connectionState.longPressTimer=setInterval(function(){
-      p+=2;
-      if(p>=100){
-        p=100;clearInterval(connectionState.longPressTimer);connectionState.longPressTimer=null;
-        connectionState.percent=tp;connectionState.stage=ts;updateUI();
-        btn.textContent='长按';btn.style.background='#ffd6e0';bar.style.height='100%';
-        connectionState.isLongPressing=false;return;
-      }
-      bar.style.height=p+'%';
-      if(p%10===0){connectionState.percent=randPct(ts);updateUI();}
-    },30);
-  };
-  b.ontouchstart=b.onmousedown;
-  b.onmouseup=function(e){
-    e.preventDefault();
-    if(connectionState.longPressTimer){clearInterval(connectionState.longPressTimer);connectionState.longPressTimer=null;}
-    var btn=document.getElementById('longPressBtn');
-    if(btn){btn.textContent='长按';btn.style.background='#ffd6e0';}
-    connectionState.isLongPressing=false;
-  };
-  b.onmouseleave=b.onmouseup;
-  b.ontouchend=b.onmouseup;
-  b.ontouchcancel=b.onmouseup;
-}
-function secretCode(){
-  var c=state.cards||[],card;
-  if(c.length===0){document.getElementById('secretInput').value='没有字卡呢…';return;}
-  card=c[Math.floor(Math.random()*c.length)];
-  document.getElementById('secretInput').value=card.text||'…';
 }
 
   // ===== CHAT =====
