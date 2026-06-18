@@ -234,7 +234,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
       </div>
       <div class="feature-arrow">›</div>
     </div>
-    <div class="feature-item" onclick="navigateTo('pageCallHistory')">
+    <div class="feature-item" onclick="navigateTo('pageConnection')">
      <div class="feature-icon pink">💗</div>
       <div class="feature-text">
         <h3>连接检查</h3>
@@ -593,7 +593,7 @@ function navigateTo(pageId) {
     if (pageId === 'pageProfile') loadProfileForm();
     if (pageId === 'pageDreamRole') loadDreamRoleForm();
     if (pageId === 'pageChat') renderChat();
-    if (pageId === 'pageConnection') { setTimeout(() => { renderConnection(); setupLongPress(); }, 50); }
+    if (pageId === 'pageConnection') { setTimeout(() => { renderConnection(); setupLongPress(); }, 50);
   } else {
     // Home
     document.querySelector('.main-content').style.display = 'block';
