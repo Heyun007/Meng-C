@@ -282,7 +282,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
   <div class="page-body" style="background:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:24px;">
     <div style="position:relative;width:200px;height:180px;margin-bottom:4px;display:flex;justify-content:center;">
       <div id="heartContainer" style="width:160px;height:150px;display:flex;align-items:center;justify-content:center;animation:heartBeat 2s ease-in-out infinite;position:relative;">
-        <div style="width:160px;height:145px;background:#ffd6e0;display:flex;align-items:center;justify-content:center;clip-path:path('M80,135 C5,65 10,-5 80,15 C150,-5 155,65 80,135 Z');">
+        <div style="width:180px;height:150px;background:#ffd6e0;display:flex;align-items:center;justify-content:center;clip-path:path('M90,140 C0,70 10,-10 90,20 C170,-10 180,70 90,140 Z');">
           <span id="connectionPercent" style="font-size:34px;font-weight:700;color:#ff6b8a;">0%</span>
         </div>
       </div>
@@ -291,7 +291,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
       </div>
     </div>
     <div id="connectionStatus" style="font-size:13px;color:#ff6b8a;font-weight:500;margin-bottom:20px;min-height:18px;text-align:center;">完全没连接上！</div>
-    <button id="longPressBtn" style="width:64px;height:64px;border-radius:50%;border:2px solid #ffb3c6;background:#ffd6e0;color:#ff6b8a;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:20px;user-select:none;outline:none;box-shadow:0 2px 12px rgba(255,107,138,0.15);">长按</button>
+    <button id="longPressBtn" style="width:64px;height:64px;border-radius:50%;border:2px solid #ffb3c6;background:#ffd6e0;color:#ff6b8a;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:20px;touch-action:none;user-select:none;outline:none;box-shadow:0 2px 12px rgba(255,107,138,0.15);">长按</button>
     <div style="display:flex;gap:8px;width:80%;max-width:280px;">
       <input type="text" id="secretInput" readonly placeholder="等待对暗号…" style="flex:1;padding:10px 14px;border:1px solid #ffd6e0;border-radius:10px;font-size:13px;outline:none;background:#fff;color:#333;text-align:center;">
       <button onclick="secretCode()" style="padding:10px 16px;border:none;border-radius:10px;background:#ffd6e0;color:#ff6b8a;font-size:13px;font-weight:500;cursor:pointer;">对暗号</button>
