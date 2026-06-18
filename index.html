@@ -1263,19 +1263,19 @@ function renderConnection() {
 function setupLongPress() {
   var b = document.getElementById('longPressBtn');
   if (!b) return;
-  b.onmousedown = function(e) {
-    e.preventDefault();
-    if (connectionState.isLongPressing) return;
+  b.onmousedown = function(ev) {
+    ev.preventDefault();
     connectionState.isLongPressing = true;
     var btn = document.getElementById('longPressBtn');
     var bar = document.getElementById('progressBar');
-    if (btn) { btn.textContent = '…'; btn.style.background = '#ffb3c6'; }
-    if (bar) bar.style.height = '0%';
+    btn.textContent = '…';
+    btn.style.background = '#ffb3c6';
+    bar.style.height = '0%';
     var p = 0;
     var ts = pickStage();
     var tp = randPct(ts);
     connectionState.longPressTimer = setInterval(function() {
-      p += 2;
+      p = p + 2;
       if (p >= 100) {
         p = 100;
         clearInterval(connectionState.longPressTimer);
@@ -1283,12 +1283,13 @@ function setupLongPress() {
         connectionState.percent = tp;
         connectionState.stage = ts;
         updateUI();
-        if (btn) { btn.textContent = '长按'; btn.style.background = '#ffd6e0'; }
-        if (bar) bar.style.height = '100%';
+        btn.textContent = '长按';
+        btn.style.background = '#ffd6e0';
+        bar.style.height = '100%';
         connectionState.isLongPressing = false;
         return;
       }
-      if (bar) bar.style.height = p + '%';
+      bar.style.height = p + '%';
       if (p % 10 === 0) {
         connectionState.percent = randPct(ts);
         updateUI();
@@ -1296,14 +1297,14 @@ function setupLongPress() {
     }, 30);
   };
   b.ontouchstart = b.onmousedown;
-  b.onmouseup = function(e) {
-    e.preventDefault();
+  b.onmouseup = function(ev) {
+    ev.preventDefault();
     if (connectionState.longPressTimer) {
       clearInterval(connectionState.longPressTimer);
       connectionState.longPressTimer = null;
     }
-    var btn = document.getElementById('longPressBtn');
-    if (btn) { btn.textContent = '长按'; btn.style.background = '#ffd6e0'; }
+    document.getElementById('longPressBtn').textContent = '长按';
+    document.getElementById('longPressBtn').style.background = '#ffd6e0';
     connectionState.isLongPressing = false;
   };
   b.onmouseleave = b.onmouseup;
