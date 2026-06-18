@@ -1181,141 +1181,87 @@ async function sendNotification(title, body) {
 }
 
   // ===== CONNECTION =====
-let connectionState = {
-  stage: null,
-  percent: 0,
-  timer: null,
-  changeCount: 0,
-  maxChanges: 0,
-  isLongPressing: false,
-  longPressTimer: null
-};
-const connectionStages = [
-  { min: 0, max: 0, text: '完全没连接上！', weight: 1 },
-  { min: 1, max: 10, text: '连接超级不稳定！', weight: 2 },
-  { min: 11, max: 25, text: '连接混乱！', weight: 3 },
-  { min: 26, max: 40, text: '连接不太稳定', weight: 5 },
-  { min: 41, max: 59, text: '一半一半，不太稳定', weight: 5 },
-  { min: 60, max: 80, text: '比较通畅，有点小混乱', weight: 3 },
-  { min: 81, max: 96, text: '连接很通畅！偶尔不太稳', weight: 2 },
-  { min: 97, max: 100, text: '连接十分通顺！', weight: 1 }
+var connectionState = {stage:null,percent:0,timer:null,changeCount:0,maxChanges:0,isLongPressing:false,longPressTimer:null};
+var connectionStages = [
+  {min:0,max:0,text:'完全没连接上！',weight:1},
+  {min:1,max:10,text:'连接超级不稳定！',weight:2},
+  {min:11,max:25,text:'连接混乱！',weight:3},
+  {min:26,max:40,text:'连接不太稳定',weight:5},
+  {min:41,max:59,text:'一半一半，不太稳定',weight:5},
+  {min:60,max:80,text:'比较通畅，有点小混乱',weight:3},
+  {min:81,max:96,text:'连接很通畅！偶尔不太稳',weight:2},
+  {min:97,max:100,text:'连接十分通顺！',weight:1}
 ];
-function pickStage() {
-  var total = 0;
-  for (var i = 0; i < connectionStages.length; i++) total += connectionStages[i].weight;
-  var r = Math.random() * total;
-  for (var i = 0; i < connectionStages.length; i++) {
-    r -= connectionStages[i].weight;
-    if (r <= 0) return connectionStages[i];
-  }
+function pickStage(){
+  var total=0,i,r;
+  for(i=0;i<connectionStages.length;i++)total+=connectionStages[i].weight;
+  r=Math.random()*total;
+  for(i=0;i<connectionStages.length;i++){r-=connectionStages[i].weight;if(r<=0)return connectionStages[i];}
   return connectionStages[0];
 }
-function randPct(stage) {
-  return stage.min + Math.floor(Math.random() * (stage.max - stage.min + 1));
-}
-function startConnectionCycle() {
-  var st = pickStage();
-  connectionState.stage = st;
-  connectionState.changeCount = 0;
-  connectionState.maxChanges = 3 + Math.floor(Math.random() * 3);
-  connectionState.percent = randPct(st);
-  updateUI();
-  if (connectionState.timer) clearInterval(connectionState.timer);
-  var el = 0;
-  connectionState.timer = setInterval(function() {
-    el++;
-    if (el >= 600) {
-      clearInterval(connectionState.timer);
-      connectionState.timer = null;
-      startConnectionCycle();
-      return;
+function randPct(s){return s.min+Math.floor(Math.random()*(s.max-s.min+1));}
+function startConnectionCycle(){
+  var st=pickStage(),el=0;
+  connectionState.stage=st;connectionState.changeCount=0;connectionState.maxChanges=3+Math.floor(Math.random()*3);
+  connectionState.percent=randPct(st);updateUI();
+  if(connectionState.timer)clearInterval(connectionState.timer);
+  connectionState.timer=setInterval(function(){
+    el++;if(el>=600){clearInterval(connectionState.timer);connectionState.timer=null;startConnectionCycle();return;}
+    if(connectionState.isLongPressing)return;
+    if(connectionState.changeCount<connectionState.maxChanges&&el%10===0){
+      connectionState.percent=randPct(st);connectionState.changeCount++;updateUI();
     }
-    if (connectionState.isLongPressing) return;
-    if (connectionState.changeCount < connectionState.maxChanges && el % 10 === 0) {
-      connectionState.percent = randPct(st);
-      connectionState.changeCount++;
-      updateUI();
-    }
-  }, 1000);
+  },1000);
 }
-function updateUI() {
-  var p = document.getElementById('connectionPercent');
-  var s = document.getElementById('connectionStatus');
-  if (p) p.textContent = connectionState.percent + '%';
-  if (s) {
-    var found = null;
-    for (var i = 0; i < connectionStages.length; i++) {
-      if (connectionState.percent >= connectionStages[i].min && connectionState.percent <= connectionStages[i].max) {
-        found = connectionStages[i];
-        break;
-      }
-    }
-    s.textContent = found ? found.text : '连接异常';
-  }
+function updateUI(){
+  var p=document.getElementById('connectionPercent'),s=document.getElementById('connectionStatus'),i,found=null;
+  if(p)p.textContent=connectionState.percent+'%';
+  if(s){for(i=0;i<connectionStages.length;i++){if(connectionState.percent>=connectionStages[i].min&&connectionState.percent<=connectionStages[i].max){found=connectionStages[i];break;}}s.textContent=found?found.text:'连接异常';}
 }
-function renderConnection() {
+function renderConnection(){
   startConnectionCycle();
-  var b = document.getElementById('longPressBtn');
-  if (b) { b.textContent = '长按'; b.style.background = '#ffd6e0'; }
-  var bar = document.getElementById('progressBar');
-  if (bar) bar.style.height = '0%';
+  var b=document.getElementById('longPressBtn'),bar=document.getElementById('progressBar');
+  if(b){b.textContent='长按';b.style.background='#ffd6e0';}
+  if(bar)bar.style.height='0%';
 }
-function setupLongPress() {
-  var b = document.getElementById('longPressBtn');
-  if (!b) return;
-  b.onmousedown = function(ev) {
-    ev.preventDefault();
-    connectionState.isLongPressing = true;
-    var btn = document.getElementById('longPressBtn');
-    var bar = document.getElementById('progressBar');
-    btn.textContent = '…';
-    btn.style.background = '#ffb3c6';
-    bar.style.height = '0%';
-    var p = 0;
-    var ts = pickStage();
-    var tp = randPct(ts);
-    connectionState.longPressTimer = setInterval(function() {
-      p = p + 2;
-      if (p >= 100) {
-        p = 100;
-        clearInterval(connectionState.longPressTimer);
-        connectionState.longPressTimer = null;
-        connectionState.percent = tp;
-        connectionState.stage = ts;
-        updateUI();
-        btn.textContent = '长按';
-        btn.style.background = '#ffd6e0';
-        bar.style.height = '100%';
-        connectionState.isLongPressing = false;
-        return;
+function setupLongPress(){
+  var b=document.getElementById('longPressBtn');
+  if(!b)return;
+  b.onmousedown=function(e){
+    e.preventDefault();
+    if(connectionState.isLongPressing)return;
+    connectionState.isLongPressing=true;
+    var btn=document.getElementById('longPressBtn'),bar=document.getElementById('progressBar'),p=0,ts=pickStage(),tp=randPct(ts);
+    btn.textContent='…';btn.style.background='#ffb3c6';bar.style.height='0%';
+    connectionState.longPressTimer=setInterval(function(){
+      p+=2;
+      if(p>=100){
+        p=100;clearInterval(connectionState.longPressTimer);connectionState.longPressTimer=null;
+        connectionState.percent=tp;connectionState.stage=ts;updateUI();
+        btn.textContent='长按';btn.style.background='#ffd6e0';bar.style.height='100%';
+        connectionState.isLongPressing=false;return;
       }
-      bar.style.height = p + '%';
-      if (p % 10 === 0) {
-        connectionState.percent = randPct(ts);
-        updateUI();
-      }
-    }, 30);
+      bar.style.height=p+'%';
+      if(p%10===0){connectionState.percent=randPct(ts);updateUI();}
+    },30);
   };
-  b.ontouchstart = b.onmousedown;
-  b.onmouseup = function(ev) {
-    ev.preventDefault();
-    if (connectionState.longPressTimer) {
-      clearInterval(connectionState.longPressTimer);
-      connectionState.longPressTimer = null;
-    }
-    document.getElementById('longPressBtn').textContent = '长按';
-    document.getElementById('longPressBtn').style.background = '#ffd6e0';
-    connectionState.isLongPressing = false;
+  b.ontouchstart=b.onmousedown;
+  b.onmouseup=function(e){
+    e.preventDefault();
+    if(connectionState.longPressTimer){clearInterval(connectionState.longPressTimer);connectionState.longPressTimer=null;}
+    var btn=document.getElementById('longPressBtn');
+    if(btn){btn.textContent='长按';btn.style.background='#ffd6e0';}
+    connectionState.isLongPressing=false;
   };
-  b.onmouseleave = b.onmouseup;
-  b.ontouchend = b.onmouseup;
-  b.ontouchcancel = b.onmouseup;
+  b.onmouseleave=b.onmouseup;
+  b.ontouchend=b.onmouseup;
+  b.ontouchcancel=b.onmouseup;
 }
-function secretCode() {
-  var c = state.cards || [];
-  if (c.length === 0) { document.getElementById('secretInput').value = '没有字卡呢…'; return; }
-  var card = c[Math.floor(Math.random() * c.length)];
-  document.getElementById('secretInput').value = card.text || '…';
+function secretCode(){
+  var c=state.cards||[],card;
+  if(c.length===0){document.getElementById('secretInput').value='没有字卡呢…';return;}
+  card=c[Math.floor(Math.random()*c.length)];
+  document.getElementById('secretInput').value=card.text||'…';
 }
 
   // ===== CHAT =====
