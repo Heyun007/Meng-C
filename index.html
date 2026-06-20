@@ -1432,7 +1432,7 @@ function sendSticker(idx) {
   var img = stickers[idx];
   if (!img) return;
   chatMessages.push({ from: 'user', text: '[表情]', time: Date.now(), sticker: img });
-  input.value = '';
+  document.getElementById('chatInput').value = '';
   renderChatMessages();
   saveChatMessages();
   document.getElementById('stickerPanel').style.display = 'none';
