@@ -1223,9 +1223,11 @@ function dreamReply() {
 }
 
 function renderChat() {
+  var chatPage = document.getElementById('pageChat');
   var bg = localStorage.getItem('dreamChatBg');
-  document.getElementById('pageChat').style.background = bg ? 'url(' + bg + ') center/cover no-repeat' : '#ffffff';
-  document.getElementById('pageChat').querySelector('.page-body').style.background = 'transparent';
+  chatPage.style.background = bg ? 'url(' + bg + ') center/cover no-repeat' : '#ffffff';
+  chatPage.querySelector('.page-body').style.background = 'transparent';
+  chatPage.querySelector('.page-body').style.backgroundColor = 'transparent';
   renderChatMessages();
   document.getElementById('chatHeaderName').textContent = state.dream.name || '沈屿';
 }
