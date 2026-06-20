@@ -1362,30 +1362,56 @@ function renderStickers() {
   var panel = document.getElementById('stickerPanel');
   if (!panel) return;
   var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;padding:4px;">';
-  // 添加按钮
   html += '<div onclick="document.getElementById(\'stickerInput\').click()" style="width:60px;height:60px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--gray);cursor:pointer;flex-shrink:0;">+</div>';
-  // 已添加的表情
   for (var i = 0; i < stickers.length; i++) {
-    html += '<div style="position:relative;width:60px;height:60px;flex-shrink:0;" oncontextmenu="return false;">';
-    html += '<img src="' + stickers[i] + '" style="width:60px;height:60px;border-radius:8px;object-fit:cover;cursor:pointer;" onclick="sendSticker(' + i + ')">';
-    html += '<span class="sticker-del" data-idx="' + i + '" onclick="deleteSticker(' + i + ')" style="display:none;position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;text-align:center;line-height:18px;cursor:pointer;z-index:5;">×</span>';
+    html += '<div class="sticker-item" style="position:relative;width:60px;height:60px;flex-shrink:0;" data-idx="' + i + '">';
+    html += '<img src="' + stickers[i] + '" style="width:60px;height:60px;border-radius:8px;object-fit:cover;cursor:pointer;">';
+    html += '<span class="sticker-del" data-idx="' + i + '" style="display:none;position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;text-align:center;line-height:18px;cursor:pointer;z-index:5;">×</span>';
     html += '</div>';
   }
   html += '</div>';
   html += '<input type="file" id="stickerInput" accept="image/*" style="display:none" onchange="addSticker(event)">';
   panel.innerHTML = html;
   
-  // 长按显示删除按钮
-  var imgs = panel.querySelectorAll('img');
-  for (var j = 0; j < imgs.length; j++) {
-    imgs[j].addEventListener('touchstart', function() {
-      var dels = panel.querySelectorAll('.sticker-del');
-      for (var k = 0; k < dels.length; k++) dels[k].style.display = 'block';
-    });
-    imgs[j].addEventListener('mousedown', function() {
-      var dels = panel.querySelectorAll('.sticker-del');
-      for (var k = 0; k < dels.length; k++) dels[k].style.display = 'block';
-    });
+  // 给每个表情添加长按检测
+  var items = panel.querySelectorAll('.sticker-item');
+  for (var j = 0; j < items.length; j++) {
+    (function(idx) {
+      var item = items[j];
+      var longPressTimer = null;
+      var isLongPress = false;
+      
+      function startPress(e) {
+        e.preventDefault();
+        isLongPress = false;
+        longPressTimer = setTimeout(function() {
+          isLongPress = true;
+          // 显示所有删除按钮
+          var dels = panel.querySelectorAll('.sticker-del');
+          for (var k = 0; k < dels.length; k++) dels[k].style.display = 'block';
+        }, 500);
+      }
+      
+      function endPress(e) {
+        e.preventDefault();
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        if (!isLongPress) {
+          // 短按 = 发送
+          sendSticker(idx);
+        }
+        isLongPress = false;
+      }
+      
+      item.addEventListener('touchstart', startPress);
+      item.addEventListener('mousedown', startPress);
+      item.addEventListener('touchend', endPress);
+      item.addEventListener('mouseup', endPress);
+      item.addEventListener('touchcancel', endPress);
+      item.addEventListener('mouseleave', endPress);
+    })(j);
   }
 }
 
