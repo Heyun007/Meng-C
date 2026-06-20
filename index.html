@@ -357,13 +357,14 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
     <h2>聊天设置</h2>
   </div>
   <div class="page-body">
-    <div class="setting-item" onclick="document.getElementById('chatBgInput').click()">
+        <div class="setting-item" onclick="document.getElementById('chatBgInput').click()" style="min-height:50px;">
       <div class="si-left">
         <span class="si-label">聊天背景</span>
-        <span class="si-desc">自定义聊天背景图</span>
+        <span class="si-desc" id="chatBgStatus">点击选择图片</span>
       </div>
+      <div id="chatBgPreview" style="width:40px;height:40px;border-radius:8px;background:#e8e8ed;flex-shrink:0;overflow:hidden;display:none;"></div>
       <div class="si-right">›</div>
-     <input type="file" id="chatBgInput" accept="image/*" style="display:none">
+      <input type="file" id="chatBgInput" accept="image/*" style="display:none">
     </div>
     <div class="form-group">
       <label>气泡颜色（用户）</label>
@@ -1294,6 +1295,15 @@ function resetChatSettings() {
   document.getElementById('bubbleDreamColor').value = '#e8e8ed';
   document.getElementById('chatFontColor').value = '#1d1d1f';
   showToast('已重置为默认');
+    var savedBg = localStorage.getItem('dreamChatBg');
+  if (savedBg) {
+    document.getElementById('chatBgStatus').textContent = '已设置 ✓';
+    document.getElementById('chatBgPreview').style.display = 'block';
+    document.getElementById('chatBgPreview').style.background = 'url(' + savedBg + ') center/cover';
+  } else {
+    document.getElementById('chatBgStatus').textContent = '点击选择图片';
+    document.getElementById('chatBgPreview').style.display = 'none';
+  }
   setupChatBg();
 }
 function handleChatBg(e) {
@@ -1326,6 +1336,9 @@ function confirmClearChat() {
     reader.onload = function(e) {
       chatSettings.bg = e.target.result;
       localStorage.setItem('dreamChatBg', e.target.result);
+            document.getElementById('chatBgStatus').textContent = '已设置 ✓';
+      document.getElementById('chatBgPreview').style.display = 'block';
+      document.getElementById('chatBgPreview').style.background = 'url(' + e.target.result + ') center/cover';
       showToast('聊天背景已设置');
     };
     reader.readAsDataURL(file);
