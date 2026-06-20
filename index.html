@@ -363,7 +363,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
         <span class="si-desc">自定义聊天背景图</span>
       </div>
       <div class="si-right">›</div>
-      <input type="file" id="chatBgInput" accept="image/*" style="display:none" onchange="handleChatBg(event)">
+     <input type="file" id="chatBgInput" accept="image/*" style="display:none" onchange="var f=this.files[0];if(f){var r=new FileReader();r.onload=function(e){chatSettings.bg=e.target.result;localStorage.setItem('dreamChatBg',e.target.result);showToast('聊天背景已设置');};r.readAsDataURL(f);}">
     </div>
     <div class="form-group">
       <label>气泡颜色（用户）</label>
