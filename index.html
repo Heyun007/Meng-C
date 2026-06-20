@@ -1223,9 +1223,9 @@ function dreamReply() {
 }
 
 function renderChat() {
-    var bg = localStorage.getItem('dreamChatBg');
-  document.getElementById('pageChat').querySelector('.page-body').style.background = bg ? 'url(' + bg + ') center/cover no-repeat' : 'var(--bg)';
-  document.getElementById('chatMessages').style.background = 'transparent';
+  var bg = localStorage.getItem('dreamChatBg');
+  document.getElementById('pageChat').style.background = bg ? 'url(' + bg + ') center/cover no-repeat' : '#ffffff';
+  document.getElementById('pageChat').querySelector('.page-body').style.background = 'transparent';
   renderChatMessages();
   document.getElementById('chatHeaderName').textContent = state.dream.name || '沈屿';
 }
