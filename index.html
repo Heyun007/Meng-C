@@ -964,6 +964,7 @@ function triggerRandomEvent() {
       var card = allCards[Math.floor(Math.random() * allCards.length)];
       chatMessages.push({ from: 'dream', text: card.text, time: Date.now() });
       saveChatMessages();
+          sendNotification(state.dream.name || '梦角', card.text);
       if (document.getElementById('pageChat').classList.contains('active')) {
         renderChatMessages();
       }
@@ -1232,6 +1233,7 @@ function dreamReply() {
   }
   renderChatMessages();
   saveChatMessages();
+    sendNotification(state.dream.name || '梦角', replyText || '发来一条消息');
 }
 
 function renderChat() {
