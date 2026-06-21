@@ -951,22 +951,18 @@ setInterval(() => {
 }
 
 function triggerRandomEvent() {
-  const r = Math.random();
+  var r = Math.random();
   if (r < 0.2) {
-    triggerCall();
+    if (state.callState === 'idle') triggerCall();
   } else if (r < 0.6) {
-    triggerCheckin();
+    if (state.callState === 'idle') triggerCheckin();
   } else {
-    // 梦角主动发消息
-    const allCards = state.cards;
+    var allCards = state.cards || [];
     if (allCards.length > 0) {
-      const card = allCards[Math.floor(Math.random() * allCards.length)];
+      var card = allCards[Math.floor(Math.random() * allCards.length)];
       chatMessages.push({ from: 'dream', text: card.text, time: Date.now() });
-        sendNotification(state.dream.name || '梦角', card.text);    
       saveChatMessages();
-      // 如果当前在聊天页面，刷新显示
-      const page = document.getElementById('pageChat');
-      if (page.classList.contains('active')) {
+      if (document.getElementById('pageChat').classList.contains('active')) {
         renderChatMessages();
       }
     }
