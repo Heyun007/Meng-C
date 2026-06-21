@@ -1190,8 +1190,6 @@ let chatMessages = [];
 
   let chatSettings = loadChatSettings();
   
- var stickers = JSON.parse(localStorage.getItem('dreamStickers') || '[]');
-
   function saveChatMessages() {
   localStorage.setItem('dreamChat', JSON.stringify(chatMessages));
 }
@@ -1216,15 +1214,7 @@ function sendChatMsg() {
 
 function dreamReply() {
   var cards = state.cards || [];
-  var useSticker = false;
-  var stickerIdx = -1;
-  if (stickers.length > 0 && Math.random() < 0.3) {
-    useSticker = true;
-    stickerIdx = Math.floor(Math.random() * stickers.length);
-  }
-  if (useSticker) {
-    chatMessages.push({ from: 'dream', text: '[表情]', time: Date.now(), stickerIdx: stickerIdx });
-  } else if (cards.length > 0) {
+  else if (cards.length > 0) {
     var idx = Math.floor(Math.random() * cards.length);
     var card = cards[idx];
     chatMessages.push({ from: 'dream', text: card.text || '…', time: Date.now() });
@@ -1346,49 +1336,6 @@ function confirmClearChat() {
     showToast('聊天记录已清除');
   }
 }
-
-  function toggleStickerPanel() {
-  var panel = document.getElementById('stickerPanel');
-  if (panel.style.display === 'none' || panel.style.display === '') {
-    panel.style.display = 'block';
-    renderStickers();
-  } else {
-    panel.style.display = 'none';
-  }
-}
-
-function renderStickers() {
-  var panel = document.getElementById('stickerPanel');
-  if (!panel) return;
-  var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;padding:4px;">';
-  html += '<div onclick="document.getElementById(\'stickerInput\').click()" style="width:60px;height:60px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--gray);cursor:pointer;flex-shrink:0;">+</div>';
-  for (var i = 0; i < stickers.length; i++) {
-    html += '<div class="sticker-item" style="position:relative;width:60px;height:60px;flex-shrink:0;" data-idx="' + i + '">';
-    html += '<img src="' + stickers[i] + '" style="width:60px;height:60px;border-radius:8px;object-fit:cover;cursor:pointer;">';
-    html += '<span class="sticker-del" data-idx="' + i + '" onclick="deleteSticker(' + i + ')" style="display:none;position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;text-align:center;line-height:18px;cursor:pointer;z-index:5;">×</span>';
-    html += '</div>';
-  }
-  html += '</div>';
-  html += '<input type="file" id="stickerInput" accept="image/*" style="display:none" onchange="addSticker(event)">';
-  panel.innerHTML = html;
-  
-  var items = panel.querySelectorAll('.sticker-item');
-  for (var j = 0; j < items.length; j++) {
-    (function(idx) {
-      var item = items[j];
-      var timer = null;
-      var long = false;
-      function start(e) { e.preventDefault(); long = false; if (timer) clearTimeout(timer); timer = setTimeout(function() { long = true; var dels = panel.querySelectorAll('.sticker-del'); for (var k = 0; k < dels.length; k++) dels[k].style.display = 'block'; }, 500); }
-      function end(e) { e.preventDefault(); if (timer) { clearTimeout(timer); timer = null; } if (!long) { sendSticker(idx); } long = false; }
-      item.addEventListener('touchstart', start);
-      item.addEventListener('mousedown', start);
-      item.addEventListener('touchend', end);
-      item.addEventListener('mouseup', end);
-      item.addEventListener('touchcancel', end);
-      item.addEventListener('mouseleave', end);
-    })(j);
-  }
-}
       
       function startPress(e) {
         e.preventDefault();
@@ -1422,36 +1369,6 @@ function renderStickers() {
       item.addEventListener('mouseleave', endPress);
     })(j);
   }
-}
-
-function addSticker(e) {
-  var file = e.target.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    stickers.push(ev.target.result);
-    localStorage.setItem('dreamStickers', JSON.stringify(stickers));
-    renderStickers();
-    showToast('表情包已添加');
-  };
-  reader.readAsDataURL(file);
-}
-
-function sendSticker(idx) {
-  if (!stickers[idx]) return;
-  chatMessages.push({ from: 'user', text: '[表情]', time: Date.now(), stickerIdx: idx });
-  document.getElementById('chatInput').value = '';
-  renderChatMessages();
-  saveChatMessages();
-  document.getElementById('stickerPanel').style.display = 'none';
-  setTimeout(function() { dreamReply(); }, 1000 + Math.random() * 2000);
-}
-
-function deleteSticker(idx) {
-  stickers.splice(idx, 1);
-  localStorage.setItem('dreamStickers', JSON.stringify(stickers));
-  renderStickers();
-  showToast('表情包已删除');
 }
 
   function setupChatBg() {
