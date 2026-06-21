@@ -1365,20 +1365,30 @@ function renderStickers() {
   for (var i = 0; i < stickers.length; i++) {
     html += '<div class="sticker-item" style="position:relative;width:60px;height:60px;flex-shrink:0;" data-idx="' + i + '">';
     html += '<img src="' + stickers[i] + '" style="width:60px;height:60px;border-radius:8px;object-fit:cover;cursor:pointer;">';
-    html += '<span class="sticker-del" data-id="' + stickers[i].id + '" style="display:none;position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;text-align:center;line-height:18px;cursor:pointer;z-index:5;">×</span>';
+    html += '<span class="sticker-del" data-idx="' + i + '" onclick="deleteSticker(' + i + ')" style="display:none;position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;text-align:center;line-height:18px;cursor:pointer;z-index:5;">×</span>';
     html += '</div>';
   }
   html += '</div>';
   html += '<input type="file" id="stickerInput" accept="image/*" style="display:none" onchange="addSticker(event)">';
   panel.innerHTML = html;
   
-  // 给每个表情添加长按检测
   var items = panel.querySelectorAll('.sticker-item');
   for (var j = 0; j < items.length; j++) {
     (function(idx) {
       var item = items[j];
-      var longPressTimer = null;
-      var isLongPress = false;
+      var timer = null;
+      var long = false;
+      function start(e) { e.preventDefault(); long = false; if (timer) clearTimeout(timer); timer = setTimeout(function() { long = true; var dels = panel.querySelectorAll('.sticker-del'); for (var k = 0; k < dels.length; k++) dels[k].style.display = 'block'; }, 500); }
+      function end(e) { e.preventDefault(); if (timer) { clearTimeout(timer); timer = null; } if (!long) { sendSticker(idx); } long = false; }
+      item.addEventListener('touchstart', start);
+      item.addEventListener('mousedown', start);
+      item.addEventListener('touchend', end);
+      item.addEventListener('mouseup', end);
+      item.addEventListener('touchcancel', end);
+      item.addEventListener('mouseleave', end);
+    })(j);
+  }
+}
       
       function startPress(e) {
         e.preventDefault();
