@@ -49,7 +49,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
 .feature-arrow{color:var(--gray);font-size:14px;}
 
 /* Pages (hidden by default) */
-.page{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:10;flex-direction:column;animation:slideIn 0.25s ease-out;}
+  .page{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:10;flex-direction:column;animation:slideIn 0.25s ease-out;}
 .page.active{display:flex;}
 @keyframes slideIn{from{transform:translateX(30px);opacity:0;}to{transform:translateX(0);opacity:1;}}
 .page-header{display:flex;align-items:center;padding:12px 16px;gap:12px;background:var(--bg);flex-shrink:0;border-bottom:1px solid var(--border);}
@@ -127,7 +127,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
 .overlay-bg{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);}
 
 /* Voice Call Overlay */
-.call-overlay{z-index:60;}
+  .call-overlay{z-index:60;}
 .call-card{position:relative;width:320px;background:linear-gradient(145deg,#1a1a2e,#16213e);border-radius:28px;padding:40px 24px 32px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);z-index:2;animation:callIn 0.35s ease-out;}
 @keyframes callIn{from{transform:scale(0.85) translateY(20px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
 .call-card .call-avatar{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;object-fit:cover;border:3px solid rgba(255,255,255,0.2);}
@@ -201,7 +201,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
   <div class="feature-text">
     <h3>聊天</h3>
     <p>和梦角实时对话</p>
-  </div>
+      </div>
   <div class="feature-arrow">›</div>
 </div>
     <div class="feature-item" onclick="navigateTo('pageProfile')">
@@ -282,7 +282,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
 </div>
 
 <!-- ===== PAGE: Personal Profile ===== -->
-<div class="page" id="pageProfile">
+  <div class="page" id="pageProfile">
   <div class="page-header">
     <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
     <h2>个人主页</h2>
@@ -511,7 +511,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
 
 <script>
 // 检测URL参数
-const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('action') === 'call') {
   setTimeout(() => triggerCall(), 500);
 }
@@ -601,7 +601,7 @@ function navigateTo(pageId) {
     if (pageId === 'pageChatSettings') { renderChatSettings(); }
   } else {
     // Home
-    document.querySelector('.main-content').style.display = 'block';
+  document.querySelector('.main-content').style.display = 'block';
   }
   // Make sure main content is hidden when a page is active
   document.querySelector('.main-content').style.display = pageId === 'pageHome' ? 'block' : 'none';
@@ -904,7 +904,7 @@ function togglePush() {
 }
 
 // ===== PUSH NOTIFICATIONS =====
-function setupPush() {
+  function setupPush() {
   const toggle = document.getElementById('pushToggle');
   toggle.classList.toggle('on', state.settings.pushEnabled);
   document.getElementById('pushToggle').onclick = togglePush;
@@ -975,7 +975,7 @@ function triggerRandomEvent() {
 
 
 // ===== VOICE CALL =====
-function triggerCall() {
+  function triggerCall() {
   if (state.callState !== 'idle') return;
   state.callState = 'ringing';
   const avatar = state.dream.avatar || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2780%27 height=%2780%27 viewBox=%270 0 80 80%27%3E%3Ccircle cx=%2740%27 cy=%2740%27 r=%2740%27 fill=%27%23ffe0e8%27/%3E%3Ctext x=%2740%27 y=%2744%27 text-anchor=%27middle%27 fill=%27%23d6336c%27 font-size=%2728%27%3E💜%3C/text%3E%3C/svg%3E';
@@ -1161,7 +1161,7 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 // ===== NOTIFICATION =====
-async function sendNotification(title, body) {
+  async function sendNotification(title, body) {
   if (!state.settings.pushEnabled) return;
   if (!('Notification' in window)) return;
   if (Notification.permission !== 'granted') return;
@@ -1189,7 +1189,9 @@ async function sendNotification(title, body) {
 let chatMessages = [];
 
   let chatSettings = loadChatSettings();
-  
+
+  let stickers = JSON.parse(localStorage.getItem('dreamStickers') || '[]');
+
   function saveChatMessages() {
   localStorage.setItem('dreamChat', JSON.stringify(chatMessages));
 }
@@ -1214,7 +1216,16 @@ function sendChatMsg() {
 
 function dreamReply() {
   var cards = state.cards || [];
-  else if (cards.length > 0) {
+  var useSticker = false;
+  var stickerImg = '';
+  if (stickers.length > 0 && Math.random() < 0.3) {
+    // 30%概率发表情
+    useSticker = true;
+    stickerImg = stickers[Math.floor(Math.random() * stickers.length)];
+  }
+  if (useSticker) {
+    chatMessages.push({ from: 'dream', text: '[表情]', time: Date.now(), sticker: stickerImg });
+  } else if (cards.length > 0) {
     var idx = Math.floor(Math.random() * cards.length);
     var card = cards[idx];
     chatMessages.push({ from: 'dream', text: card.text || '…', time: Date.now() });
@@ -1257,9 +1268,9 @@ function renderChatMessages() {
     if (m.from === 'user') {
       html += '<div style="display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;margin-bottom:6px;">';
       html += '<div style="max-width:70%;">';
-      if (m.stickerIdx !== undefined && stickers[m.stickerIdx]) {
-  html += '<img src="' + stickers[m.stickerIdx] + '" ...       
-    } else {
+                  if (m.stickerIdx !== undefined && stickers[m.stickerIdx]) {
+        html += '<div style="background:' + chatSettings.bubbleUser + ';border-radius:12px 12px 4px 12px;padding:4px;font-size:14px;color:' + chatSettings.fontColor + ';"><img src="' + stickers[m.stickerIdx] + '" style="width:120px;height:120px;border-radius:6px;object-fit:cover;display:block;"></div>';
+      } else {
         html += '<div style="background:' + chatSettings.bubbleUser + ';border-radius:12px 12px 4px 12px;padding:8px 14px;font-size:14px;color:' + chatSettings.fontColor + ';">' + m.text + '</div>';
       }
       html += '<span style="font-size:10px;color:#86868b;display:block;text-align:right;margin-top:2px;">' + timeStr + '</span>';
@@ -1270,9 +1281,9 @@ function renderChatMessages() {
       html += '<div style="display:flex;justify-content:flex-start;align-items:flex-end;gap:8px;margin-bottom:6px;">';
       html += '<img src="' + dreamAvatar + '" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;">';
       html += '<div style="max-width:70%;">';
-      if (m.stickerIdx !== undefined && stickers[m.stickerIdx]) {
-  html += '<img src="' + stickers[m.stickerIdx] + '" ...        
-    } else {
+                  if (m.stickerIdx !== undefined && stickers[m.stickerIdx]) {
+        html += '<div style="background:' + chatSettings.bubbleDream + ';border-radius:12px 12px 12px 4px;padding:4px;font-size:14px;color:' + chatSettings.fontColor + ';"><img src="' + stickers[m.stickerIdx] + '" style="width:120px;height:120px;border-radius:6px;object-fit:cover;display:block;"></div>';
+      } else {
         html += '<div style="background:' + chatSettings.bubbleDream + ';border-radius:12px 12px 12px 4px;padding:8px 14px;font-size:14px;color:' + chatSettings.fontColor + ';">' + m.text + '</div>';
       }
       html += '<span style="font-size:10px;color:#86868b;display:block;margin-top:2px;">' + timeStr + '</span>';
@@ -1283,7 +1294,7 @@ function renderChatMessages() {
   container.innerHTML = html;
   container.scrollTop = container.scrollHeight;
 }
-  
+
   function loadChatSettings() {
   try {
     var saved = localStorage.getItem('dreamChatSettings');
@@ -1336,6 +1347,39 @@ function confirmClearChat() {
     showToast('聊天记录已清除');
   }
 }
+
+  function toggleStickerPanel() {
+  var panel = document.getElementById('stickerPanel');
+  if (panel.style.display === 'none' || panel.style.display === '') {
+    panel.style.display = 'block';
+    renderStickers();
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function renderStickers() {
+  var panel = document.getElementById('stickerPanel');
+  if (!panel) return;
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;padding:4px;">';
+  html += '<div onclick="document.getElementById(\'stickerInput\').click()" style="width:60px;height:60px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--gray);cursor:pointer;flex-shrink:0;">+</div>';
+  for (var i = 0; i < stickers.length; i++) {
+    html += '<div class="sticker-item" style="position:relative;width:60px;height:60px;flex-shrink:0;" data-idx="' + i + '">';
+    html += '<img src="' + stickers[i] + '" style="width:60px;height:60px;border-radius:8px;object-fit:cover;cursor:pointer;">';
+    html += '<span class="sticker-del" data-idx="' + i + '" style="display:none;position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;text-align:center;line-height:18px;cursor:pointer;z-index:5;">×</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+  html += '<input type="file" id="stickerInput" accept="image/*" style="display:none" onchange="addSticker(event)">';
+  panel.innerHTML = html;
+  
+  // 给每个表情添加长按检测
+  var items = panel.querySelectorAll('.sticker-item');
+  for (var j = 0; j < items.length; j++) {
+    (function(idx) {
+      var item = items[j];
+      var longPressTimer = null;
+      var isLongPress = false;
       
       function startPress(e) {
         e.preventDefault();
@@ -1369,6 +1413,36 @@ function confirmClearChat() {
       item.addEventListener('mouseleave', endPress);
     })(j);
   }
+}
+
+function addSticker(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    stickers.push(ev.target.result);
+    localStorage.setItem('dreamStickers', JSON.stringify(stickers));
+    renderStickers();
+    showToast('表情包已添加');
+  };
+  reader.readAsDataURL(file);
+}
+
+function sendSticker(idx) {
+  if (!stickers[idx]) return;
+  chatMessages.push({ from: 'user', text: '[表情]', time: Date.now(), stickerIdx: idx });
+  document.getElementById('chatInput').value = '';
+  renderChatMessages();
+  saveChatMessages();
+  document.getElementById('stickerPanel').style.display = 'none';
+  setTimeout(function() { dreamReply(); }, 1000 + Math.random() * 2000);
+}
+
+function deleteSticker(idx) {
+  stickers.splice(idx, 1);
+  localStorage.setItem('dreamStickers', JSON.stringify(stickers));
+  renderStickers();
+  showToast('表情包已删除');
 }
 
   function setupChatBg() {
