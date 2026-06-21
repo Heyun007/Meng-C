@@ -399,6 +399,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
   <div class="page-header">
     <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
     <h2>语音通话记录</h2>
+     <button onclick="clearCallHistory()" style="width:32px;height:32px;border:none;background:transparent;font-size:18px;cursor:pointer;color:var(--red);display:flex;align-items:center;justify-content:center;">🗑️</button>
   </div>
   <div class="page-body">
     <div class="history-list" id="callHistoryList">
@@ -412,6 +413,7 @@ body{background:var(--bg);display:flex;justify-content:center;align-items:center
   <div class="page-header">
     <button class="back-btn" onclick="navigateTo('pageHome')">‹</button>
     <h2>查岗记录</h2>
+    <button onclick="clearCheckinHistory()" style="width:32px;height:32px;border:none;background:transparent;font-size:18px;cursor:pointer;color:var(--red);display:flex;align-items:center;justify-content:center;">🗑️</button>
   </div>
   <div class="page-body">
     <div class="history-list" id="checkinHistoryList">
@@ -1458,6 +1460,22 @@ function deleteSticker(idx) {
     };
     reader.readAsDataURL(file);
   };
+}
+
+  function clearCallHistory() {
+  if (!confirm('确定清除所有通话记录？')) return;
+  state.callHistory = [];
+  saveState();
+  renderCallHistory();
+  showToast('通话记录已清除');
+}
+
+function clearCheckinHistory() {
+  if (!confirm('确定清除所有查岗记录？')) return;
+  state.checkinHistory = [];
+  saveState();
+  renderCheckinHistory();
+  showToast('查岗记录已清除');
 }
 
 // ===== TOAST =====
