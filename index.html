@@ -1189,90 +1189,8 @@ async function sendNotification(title, body) {
 let chatMessages = [];
 
   let chatSettings = loadChatSettings();
-
-  // ===== STICKERS (IndexedDB) =====
-var stickers = [];
-var db = null;
-
-function openDB(callback) {
-  var req = indexedDB.open('DreamStickers', 1);
-  req.onupgradeneeded = function(e) {
-    var d = e.target.result;
-    if (!d.objectStoreNames.contains('stickers')) {
-      d.createObjectStore('stickers', { keyPath: 'id', autoIncrement: true });
-    }
-  };
-  req.onsuccess = function(e) {
-    db = e.target.result;
-    loadAllStickers(callback);
-  };
-  req.onerror = function() { showToast('存储初始化失败'); if (callback) callback(); };
-}
-
-function loadAllStickers(callback) {
-  stickers = [];
-  if (!db) { if (callback) callback(); return; }
-  var tx = db.transaction('stickers', 'readonly');
-  var store = tx.objectStore('stickers');
-  var req = store.getAll();
-  req.onsuccess = function() {
-    stickers = req.result || [];
-    if (callback) callback();
-  };
-  req.onerror = function() { if (callback) callback(); };
-}
-
-function addStickerToDB(dataURL, callback) {
-  if (!db) { showToast('数据库未就绪'); return; }
-  var tx = db.transaction('stickers', 'readwrite');
-  var store = tx.objectStore('stickers');
-  var req = store.add({ data: dataURL });
-  req.onsuccess = function() {
-    loadAllStickers(function() {
-      renderStickers();
-      if (callback) callback();
-    });
-    showToast('表情包已添加');
-  };
-  req.onerror = function() { showToast('添加失败'); };
-}
-
-function deleteStickerFromDB(id, callback) {
-  if (!db) return;
-  var tx = db.transaction('stickers', 'readwrite');
-  var store = tx.objectStore('stickers');
-  var req = store.delete(id);
-  req.onsuccess = function() {
-    loadAllStickers(function() {
-      renderStickers();
-      if (callback) callback();
-    });
-    showToast('表情包已删除');
-  };
-}
-
-function migrateOldStickers() {
-  // 把旧聊天记录里的 m.sticker 转成 m.stickerIdx
-  var changed = false;
-  for (var i = 0; i < chatMessages.length; i++) {
-    var m = chatMessages[i];
-    if (m.sticker && m.stickerIdx === undefined) {
-      // 尝试在 stickers 数组里找到匹配的图片
-      for (var j = 0; j < stickers.length; j++) {
-        if (stickers[j].data === m.sticker) {
-          m.stickerIdx = stickers[j].id;
-          delete m.sticker;
-          changed = true;
-          break;
-        }
-      }
-    }
-  }
-  if (changed) { saveChatMessages(); renderChatMessages(); }
-}
-
-// 初始化时打开数据库
-openDB(function() { migrateOldStickers(); });
+  
+ var stickers = JSON.parse(localStorage.getItem('dreamStickers') || '[]');
 
   function saveChatMessages() {
   localStorage.setItem('dreamChat', JSON.stringify(chatMessages));
@@ -1504,7 +1422,24 @@ function addSticker(e) {
   if (!file) return;
   var reader = new FileReader();
   reader.onload = function(ev) {
-    addStickerToDB(ev.target.result);
+    // 压缩图片
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var maxSize = 100;
+      var w = img.width, h = img.height;
+      if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
+      else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var compressed = canvas.toDataURL('image/jpeg', 0.5);
+      stickers.push(compressed);
+      localStorage.setItem('dreamStickers', JSON.stringify(stickers));
+      renderStickers();
+      showToast('表情包已添加');
+    };
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
