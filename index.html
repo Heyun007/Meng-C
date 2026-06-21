@@ -1350,12 +1350,10 @@ function renderChatMessages() {
     if (m.from === 'user') {
       html += '<div style="display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;margin-bottom:6px;">';
       html += '<div style="max-width:70%;">';
-      if (m.stickerIdx !== undefined && findStickerById(m.stickerIdx)) {
-        var st = findStickerById(m.stickerIdx);
-        html += '<div style="background:' + chatSettings.bubbleUser + ';border-radius:12px 12px 4px 12px;padding:4px;font-size:14px;color:' + chatSettings.fontColor + ';"><img src="' + st.data + '" style="width:120px;height:120px;border-radius:6px;object-fit:cover;display:block;"></div>';
-      } else if (m.sticker) {
-        html += '<div style="background:' + chatSettings.bubbleUser + ';border-radius:12px 12px 4px 12px;padding:4px;font-size:14px;color:' + chatSettings.fontColor + ';"><img src="' + m.sticker + '" style="width:120px;height:120px;border-radius:6px;object-fit:cover;display:block;"></div>';
-      } else {
+             if (m.stickerIdx !== undefined && findStickerById(m.stickerIdx)) {
+        var stData = findStickerById(m.stickerIdx).data;
+        html += '<div style="background:' + chatSettings.bubbleUser + ';border-radius:12px 12px 4px 12px;padding:4px;font-size:14px;color:' + chatSettings.fontColor + ';"><img src="' + stData + '" ...           
+    } else {
         html += '<div style="background:' + chatSettings.bubbleUser + ';border-radius:12px 12px 4px 12px;padding:8px 14px;font-size:14px;color:' + chatSettings.fontColor + ';">' + m.text + '</div>';
       }
       html += '<span style="font-size:10px;color:#86868b;display:block;text-align:right;margin-top:2px;">' + timeStr + '</span>';
@@ -1366,12 +1364,10 @@ function renderChatMessages() {
       html += '<div style="display:flex;justify-content:flex-start;align-items:flex-end;gap:8px;margin-bottom:6px;">';
       html += '<img src="' + dreamAvatar + '" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;object-fit:cover;">';
       html += '<div style="max-width:70%;">';
-      if (m.stickerIdx !== undefined && findStickerById(m.stickerIdx)) {
-        var st = findStickerById(m.stickerIdx);
-        html += '<div style="background:' + chatSettings.bubbleDream + ';border-radius:12px 12px 12px 4px;padding:4px;font-size:14px;color:' + chatSettings.fontColor + ';"><img src="' + st.data + '" style="width:120px;height:120px;border-radius:6px;object-fit:cover;display:block;"></div>';
-      } else if (m.sticker) {
-        html += '<div style="background:' + chatSettings.bubbleDream + ';border-radius:12px 12px 12px 4px;padding:4px;font-size:14px;color:' + chatSettings.fontColor + ';"><img src="' + m.sticker + '" style="width:120px;height:120px;border-radius:6px;object-fit:cover;display:block;"></div>';
-      } else {
+              if (m.stickerIdx !== undefined && findStickerById(m.stickerIdx)) {
+        var stData = findStickerById(m.stickerIdx).data;
+        html += '<div style="background:' + chatSettings.bubbleDream + ';border-radius:12px 12px 12px 4px;padding:4px;font-size:14px;color:' + chatSettings.fontColor + ';"><img src="' + stData + '" ...      
+    } else {
         html += '<div style="background:' + chatSettings.bubbleDream + ';border-radius:12px 12px 12px 4px;padding:8px 14px;font-size:14px;color:' + chatSettings.fontColor + ';">' + m.text + '</div>';
       }
       html += '<span style="font-size:10px;color:#86868b;display:block;margin-top:2px;">' + timeStr + '</span>';
@@ -1382,7 +1378,7 @@ function renderChatMessages() {
   container.innerHTML = html;
   container.scrollTop = container.scrollHeight;
 }
-
+  
   function loadChatSettings() {
   try {
     var saved = localStorage.getItem('dreamChatSettings');
